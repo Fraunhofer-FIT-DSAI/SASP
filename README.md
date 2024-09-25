@@ -19,10 +19,6 @@
     <li><a href="#citation">Citation</a></li>
   </ol>
 
-  <p align="center">
-  <img src="readme-images/sasp_logo.png" alt="Logo" width="200"/>
-</p>
-
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 This README document is designed to help the viewer understand the structure of the overall repository. The tool contains files related to the playbook management tool used to input/edit/query the mediawiki with new information. The `readme-images` folder simply contains any image files that are used in the many readme files of the project. 
@@ -204,11 +200,11 @@ This section should list all the major technologies that are used to develop the
 This project has received funding from the European Union’s Horizon 2020 research and innovation programme under grant agreements No 833418 ([SAPPAN](https://sappan-project.eu/)) and No 101020560 ([CyberSEAS](https://cyberseas.eu/)).
 To reference our work in your publications, please use the following papers:
 
-Playbook management tool: 
+**Playbook management tool:** 
 Mehdi Akbari Gurabi, Avikarsha Mandal, Jan Popanda, Robert Rapp, and Stefan Decker. "SASP: a Semantic web-based Approach for management of Sharable cybersecurity Playbooks." In Proceedings of the 17th International Conference on Availability, Reliability and Security, pp. 1-8. 2022.
 [DOI](https://doi.org/10.1145/3538969.3544478)
 
-Integration with security tools and automation effort:
+**Integration with security tools, automation and reporting effort:**
 Mehdi Akbari Gurabi, Lasse Nitz, Andrej Bregar, Jan Popanda, Christian Siemers, Roman Matzutt, and Avikarsha Mandal. "Requirements for Playbook-Assisted Cyber Incident Response, Reporting and Automation." Digital Threats: Research and Practice (2024).
 [DOI](https://doi.org/10.1145/3688810)
 
