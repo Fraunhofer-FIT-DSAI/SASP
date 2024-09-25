@@ -25,6 +25,8 @@ This README document is designed to help the viewer understand the structure of 
 The playbook management tool is designed to provide a wide variety of functionalities around cyber security playbooks. Such as playbook creation, management, limited automatic execution and easy sharing. However, the open-source version does not contain all the functionalities.
 
 ## Dependencies
+As a scientific library in the Python ecosystem, we rely on external libraries to offer our features. In the `/third_party` folder, we list all the licenses of our direct dependencies. Please check the `/third_party/licenses.json` file to get a full list of dependencies and the corresponding licenses.
+
 ### Basic Technologies
 - You need to download and install Semantic Mediawiki (SMW) instance. For that, you need to have [Docker](https://www.docker.com/), and then install the [SMW](https://github.com/WolfgangFahl/pymediawikidocker?tab=readme-ov-file/).
 - [Python](https://www.python.org/), v3.10.13 was used for the development. Anything later *should* work fine too. Previous versions may work but are not tested. Python 2 is not supported.
@@ -41,20 +43,20 @@ This section concerns the creation of a Semantic Media Wiki instance which is a 
 
 You need to download and install SMW instance. For that, you need to have [Docker](https://www.docker.com/), and then install the [SMW](https://github.com/WolfgangFahl/pymediawikidocker?tab=readme-ov-file/).
 
-## Run Program
+### Run Program
 In order for SASP to work, the mediawiki setup must have been fully completed and the Mediawiki must be active. After the setup procedure is done, make sure the docker containers are running and then proceed with the installation of the tool. The tool is being developed using Python 3.10.13 and Django 4.1 and should be compatible with Python 3.10 and above. The tool is currently being developed on Windows 10, but should be compatible with Linux and MacOS as well.
 
 ### Prerequisites and Installation
 
 Make sure all the dependencies listed above are installed. 
 
-## Configuration
+### Configuration
 
 The project uses a `config.env` and `keys.env` to store configuration and sensitive information. 
 In the `/config/` folder, there is a `config_example.env` and `keys_example.env` file that can be used as a template for the actual `config.env` and `keys.env` files and below is an overview of the environment variables used in the project and installation.
 
-### Overview of Environment Variables
-#### Config.env
+#### Overview of Environment Variables
+##### Config.env
 | Variable | Description | Default Value | Optional | Notes |
 | --- | --- | --- | --- | --- |
 | `GRAPHVIZ_PATH` | Path to the Graphviz installation used for BPMN generation | `` | Yes | - |
@@ -86,7 +88,7 @@ In the `/config/` folder, there is a `config_example.env` and `keys_example.env`
 | `KAFKA_REGISTRY_PLAIN_SSL_KEY_LOCATION` | Path to the decrypted Kafka client key | `kafka/certs/sappan/sappan-key-plain.pem` | No | Used for sharing via Kafka, not yet implemented |
 | `APP_application_id` | An identifier for this application | `FRAUNHOFER-SASP` | No | Used for signing playbooks when shared |
 
-  #### Keys.env
+  ##### Keys.env
 | Variable | Description | Default Value | Notes |
 | --- | --- | --- | --- |
 | `MISP_KEY` | API key for the MISP instance | `` | - |
@@ -94,7 +96,7 @@ In the `/config/` folder, there is a `config_example.env` and `keys_example.env`
 | `CORTEX_API_KEY` | API key for the Cortex instance | `` | - |
 | `KAFKA_SSL_KEY_PWD` | Password for the Kafka client key | `` | - |
 
-## Automatic Setup
+### Automatic Setup
 1.  Install all the prerequisites from the previous chapter
 2.  Make sure the mediawiki is running and the connection information is correct in the `config/config.env` file.
 3.  Execute the following commands
@@ -102,7 +104,7 @@ In the `/config/` folder, there is a `config_example.env` and `keys_example.env`
 python setup.py
 ```
 
-## Manual Setup
+### Manual Setup
 1. Install all the prerequisites from the previous chapter
 2. Make sure the mediawiki is running and the connection information is correct in the `config/config.env` file.
 4. Execute the following commands
@@ -115,10 +117,10 @@ python manage.py make_default_user
 python manage.py update_forms
 ```
 
-## Updating the Tool
+### Updating the Tool
 Unless otherwise instructed you only need to update the database and the default user, so use the provided switches in the `setup.py` script to skip the form update and playbook import steps.
 
-## Running the Program
+### Running the Program
 Assuming everything is set up correctly, you can run the program with the following steps:
 1. Run SASP from the terminal/powershell while in the project's folder
    ```sh
@@ -130,7 +132,7 @@ Assuming everything is set up correctly, you can run the program with the follow
     ```
 7. Open the browser and navigate to the URL that is printed in the terminal/powershell. By default this is `http://localhost:8000/sasp/`
 
-## Additional Commands
+### Additional Commands
 There are a few additional commands that can be used to interact with the tool all are invoked with `python manage.py <command>`. 
 - `import_playbook`: Imports a playbook from a json file into the tool
   - `--path`: Path to the json file (Required)
@@ -138,7 +140,7 @@ There are a few additional commands that can be used to interact with the tool a
 - `createsuperuser`: Django command to create a superuser. With this user you can access the admin interface of the tool at `http://localhost:8000/admin/` and manage the database
 
 <!-- FILES OVERVIEW -->
-## Package Overview
+### Package Overview
 The tool code is located in the `sasp` folder.
 To give an overview of each file/folder:
 - `auth`: Contains methods for SSO using Keycloak
@@ -184,6 +186,10 @@ This section shows a **very** general overview of the tasks that have been compl
  - [ ] Clean up repository structure, update documentation
  - [ ] Implement semantic functionality for the tool and remove the mediawiki dependency
 
+### Release Notes
+
+To track the incremental updates, please refer to the [CHANGELOG](./CHANGELOG) file.
+
 ## Technologies Used
 This section should list all the major technologies that are used to develop the project within the repository.
 
@@ -209,6 +215,6 @@ Mehdi Akbari Gurabi, Lasse Nitz, Andrej Bregar, Jan Popanda, Christian Siemers, 
 [DOI](https://doi.org/10.1145/3688810)
 
 <p align="center">
-  <img src="readme-images/sasp_logo.png" alt="Logo" width="200"/>
+  <img src="readme-images/sasp_logo.png" alt="Logo" width="250"/>
 </p>
 
