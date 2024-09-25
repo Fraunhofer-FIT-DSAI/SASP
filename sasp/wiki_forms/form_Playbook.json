@@ -1,0 +1,157 @@
+{
+    "metadata": {
+        "schema": "SAPPAN",
+        "schema-url": "None",
+        "title": "Playbook",
+        "key": "Playbook"
+    },
+    "fields": [
+        {
+            "key": "hasPlaybookPurpose",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "Playbook Purpose",
+            "semantic_property": "HasPlaybookFocus"
+        },
+        {
+            "key": "hasPlaybookFocus",
+            "field-type": "choose-one",
+            "value-type": "string",
+            "options": [
+                "Containment",
+                "Eradication",
+                "Recovery",
+                "Detection",
+                "Analysis",
+                "Post-Event Activity",
+                "Preparation"
+            ],
+            "label": "Playbook Focus",
+            "semantic_property": "HasPlaybookFocus"
+        },
+        {
+            "key": "hasPlaybookCategory",
+            "field-type": "choose-one",
+            "value-type": "string",
+            "options": [
+                "Excercise",
+                "Local Workflow",
+                "Playbook",
+                "Workflow"
+            ],
+            "label": "Playbook Category",
+            "semantic_property": "HasPlaybookCategory"
+        },
+        {
+            "key": "hasPlaybookState",
+            "field-type": "choose-one",
+            "value-type": "string",
+            "options": [
+                "Invalid",
+                "Out-dated",
+                "Under-revision",
+                "Up-to-date",
+                "Work-in-progress"
+            ],
+            "label": "Playbook State",
+            "semantic_property": "HasPlaybookState"
+        },
+        {
+            "key": "hasPrecondition",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "Precondition",
+            "semantic_property": "HasPrecondition"
+        },
+        {
+            "key": "hasPostcondition",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "Postcondition",
+            "semantic_property": "HasPostcondition"
+        },
+        {
+            "key": "hasRelationshipToGovernance",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "Relationship to Governance",
+            "semantic_property": "HasRelationshipToGovernace"
+        },
+        {
+            "key": "isLicensedUnder",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "Licensed Under",
+            "semantic_property": "IsLicensedUnder"
+        },
+        {
+            "key": "hasAuthor",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "Author",
+            "semantic_property": "HasAuthor"
+        },
+        {
+            "key": "hasVersion",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "Version",
+            "semantic_property": "HasVersion"
+        },
+        {
+            "key": "hasId",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "ID",
+            "semantic_property": "HasId"
+        },
+        {
+            "key": "hasConfidentiality",
+            "field-type": "choose-one",
+            "value-type": "string",
+            "options": [
+                "TLP:WHITE",
+                "TLP:GREEN",
+                "TLP:AMBER",
+                "TLP:RED"
+            ],
+            "label": "Confidentiality",
+            "semantic_property": "HasConfidentiality"
+        },
+        {
+            "key": "hasInitialStep",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "Initial Step",
+            "semantic_property": "HasInitialStep"
+        },
+        {
+            "key": "hasFinalStep",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "Final Step",
+            "semantic_property": "HasFinalStep"
+        },
+        {
+            "key": "hasIntermediateStep",
+            "field-type": "list",
+            "value-type": "object",
+            "label": "Intermediate Step(s)",
+            "semantic_property": "HasIntermediateStep"
+        },
+        {
+            "key": "hasOptionalStep",
+            "field-type": "list",
+            "value-type": "object",
+            "label": "Optional Step(s)",
+            "semantic_property": "HasOptionalStep"
+        },
+        {
+            "key": "hasExclusiveChoiceStep",
+            "field-type": "list",
+            "value-type": "object",
+            "label": "Exclusive Choice Step(s)",
+            "semantic_property": "HasExclusiveChoiceStep"
+        }
+    ]
+}

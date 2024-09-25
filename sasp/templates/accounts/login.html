@@ -1,0 +1,15 @@
+{% extends "base_generic.html" %}
+{% block title %}Login{% endblock %}
+{% block content %}
+    {% if form.errors %}
+    <p>Your username and password didn't match. Please try again.</p>
+    {% endif %}
+  <h2>Login</h2>
+  <p>Please login as default user, username: default, password: default</p>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_table }}
+    <input type="submit" value="login">
+    <input type="hidden" name="next" value="{{ next }}">
+    </form>
+{% endblock %}

@@ -1,0 +1,351 @@
+{
+    "metadata": {
+        "schema": "CACAO 1.1",
+        "schema-url": "https://docs.oasis-open.org/cacao/security-playbooks/v1.1/security-playbooks-v1.1.html",
+        "title": "CACAO Playbook",
+        "key": "CACAO Playbook"
+    },
+    "fields": [
+        {
+            "key": "type",
+            "field-type": "choose-one",
+            "value-type": "string",
+            "options": [
+                "playbook",
+                "playbook-template"
+            ],
+            "label": "Type",
+            "semantic_property": "type"
+        },
+        {
+            "key": "spec_version",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "Spec Version",
+            "semantic_property": "spec_version"
+        },
+        {
+            "key": "id",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "ID",
+            "semantic_property": "id"
+        },
+        {
+            "key": "name",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "Name",
+            "semantic_property": "name"
+        },
+        {
+            "key": "description",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "Description",
+            "semantic_property": "description"
+        },
+        {
+            "key": "playbook_types",
+            "field-type": "choose-many",
+            "value-type": "string",
+            "options": [
+                "attack",
+                "detection",
+                "investigation",
+                "mitigation",
+                "notification",
+                "prevention",
+                "remediation",
+                "attack",
+                "detection",
+                "investigation",
+                "mitigation",
+                "notification",
+                "prevention",
+                "remediation"
+            ],
+            "label": "Playbook Types",
+            "semantic_property": "playbook_types"
+        },
+        {
+            "key": "created_by",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "Created by",
+            "semantic_property": "created_by"
+        },
+        {
+            "key": "created",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "Created",
+            "semantic_property": "created"
+        },
+        {
+            "key": "modified",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "Modified",
+            "semantic_property": "modified"
+        },
+        {
+            "key": "revoked",
+            "field-type": "checkbox",
+            "value-type": "boolean",
+            "label": "Revoked",
+            "semantic_property": "revoked"
+        },
+        {
+            "key": "valid_from",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "Valid from",
+            "semantic_property": "valid_from"
+        },
+        {
+            "key": "valid_until",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "Valid until",
+            "semantic_property": "valid_until"
+        },
+        {
+            "key": "derived_from",
+            "field-type": "list",
+            "value-type": "object",
+            "label": "Derived from",
+            "semantic_property": "derived_from"
+        },
+        {
+            "key": "priority",
+            "field-type": "text",
+            "value-type": "int",
+            "label": "Priority",
+            "semantic_property": "priority"
+        },
+        {
+            "key": "severity",
+            "field-type": "text",
+            "value-type": "int",
+            "label": "Severity",
+            "semantic_property": "severity"
+        },
+        {
+            "key": "impact",
+            "field-type": "text",
+            "value-type": "int",
+            "label": "Impact",
+            "semantic_property": "impact"
+        },
+        {
+            "key": "industry_sectors",
+            "field-type": "choose-many",
+            "value-type": "string",
+            "options": [
+                "aerospace",
+                "agriculture",
+                "automotive",
+                "aviation",
+                "biotechnology",
+                "chemical",
+                "commercial",
+                "construction",
+                "consulting",
+                "cosmetics",
+                "critical-infrastructure",
+                "dams",
+                "defense",
+                "education",
+                "electronics-hardware",
+                "emergency-services",
+                "energy",
+                "financial",
+                "food",
+                "gambling",
+                "government",
+                "healthcare",
+                "human-rights",
+                "humanitarian-aid",
+                "information-communications-technology",
+                "legal-services",
+                "local-government",
+                "lodging",
+                "logistics-shipping",
+                "manufacturing",
+                "maritime",
+                "media",
+                "metals",
+                "mining",
+                "national-government",
+                "non-profit",
+                "non-renewable-energy",
+                "nuclear",
+                "petroleum",
+                "pharmaceuticals",
+                "public-services",
+                "regional-government",
+                "renewable-energy",
+                "research",
+                "software",
+                "telecommunications",
+                "transportation",
+                "utilities",
+                "video-game",
+                "water",
+                "aerospace",
+                "agriculture",
+                "automotive",
+                "aviation",
+                "biotechnology",
+                "chemical",
+                "commercial",
+                "construction",
+                "consulting",
+                "cosmetics",
+                "critical-infrastructure",
+                "dams",
+                "defense",
+                "education",
+                "electronics-hardware",
+                "emergency-services",
+                "energy",
+                "financial",
+                "food",
+                "gambling",
+                "government",
+                "healthcare",
+                "human-rights",
+                "humanitarian-aid",
+                "information-communications-technology",
+                "legal-services",
+                "local-government",
+                "lodging",
+                "logistics-shipping",
+                "manufacturing",
+                "maritime",
+                "media",
+                "metals",
+                "mining",
+                "national-government",
+                "non-profit",
+                "non-renewable-energy",
+                "nuclear",
+                "petroleum",
+                "pharmaceuticals",
+                "public-services",
+                "regional-government",
+                "renewable-energy",
+                "research",
+                "software",
+                "telecommunications",
+                "transportation",
+                "utilities",
+                "video-game",
+                "water"
+            ],
+            "label": "Industry Sectors",
+            "semantic_property": "industry_sectors"
+        },
+        {
+            "key": "labels",
+            "field-type": "list",
+            "value-type": "string",
+            "label": "Labels",
+            "semantic_property": "labels"
+        },
+        {
+            "key": "external_references",
+            "field-type": "list",
+            "value-type": "object",
+            "label": "External References",
+            "semantic_property": "external_references"
+        },
+        {
+            "key": "features",
+            "field-type": "choose-many",
+            "value-type": "string",
+            "options": [
+                "data_markings",
+                "extensions",
+                "if_logic",
+                "parallel_processing",
+                "switch_logic",
+                "temporal_logic",
+                "while_logic",
+                "data_markings",
+                "extensions",
+                "if_logic",
+                "parallel_processing",
+                "switch_logic",
+                "temporal_logic",
+                "while_logic"
+            ],
+            "label": "Features",
+            "semantic_property": "features"
+        },
+        {
+            "key": "markings",
+            "field-type": "list",
+            "value-type": "object",
+            "label": "Markings",
+            "semantic_property": "markings"
+        },
+        {
+            "key": "playbook_variables",
+            "field-type": "list",
+            "value-type": "object",
+            "label": "Playbook Variables",
+            "semantic_property": "playbook_variables"
+        },
+        {
+            "key": "workflow_start",
+            "field-type": "choose-one",
+            "value-type": "object",
+            "label": "Workflow Start",
+            "semantic_property": "workflow_start"
+        },
+        {
+            "key": "workflow_exception",
+            "field-type": "choose-one",
+            "value-type": "object",
+            "label": "Workflow Exception",
+            "semantic_property": "workflow_exception"
+        },
+        {
+            "key": "workflow",
+            "field-type": "list",
+            "value-type": "object",
+            "label": "Workflow",
+            "semantic_property": "workflow"
+        },
+        {
+            "key": "targets",
+            "field-type": "list",
+            "value-type": "object",
+            "label": "Targets",
+            "semantic_property": "targets"
+        },
+        {
+            "key": "extension_definitions",
+            "field-type": "list",
+            "value-type": "object",
+            "label": "Extension Definitions",
+            "semantic_property": "extension_definitions"
+        },
+        {
+            "key": "data_marking_definitions",
+            "field-type": "list",
+            "value-type": "object",
+            "label": "Data Marking Definitions",
+            "semantic_property": "data_marking_definitions"
+        },
+        {
+            "key": "signatures",
+            "field-type": "list",
+            "value-type": "object",
+            "label": "Signatures",
+            "semantic_property": "signatures"
+        }
+    ]
+}

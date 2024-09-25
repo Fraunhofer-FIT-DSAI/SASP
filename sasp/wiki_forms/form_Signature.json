@@ -1,0 +1,139 @@
+{
+    "metadata": {
+        "schema": "CACAO 1.1",
+        "schema-url": "https://docs.oasis-open.org/cacao/security-playbooks/v1.1/security-playbooks-v1.1.html",
+        "title": "Signature",
+        "key": "Signature"
+    },
+    "fields": [
+        {
+            "key": "type",
+            "field-type": "choose-one",
+            "value-type": "string",
+            "options": [
+                "signature"
+            ],
+            "label": "Type",
+            "semantic_property": "Type"
+        },
+        {
+            "key": "spec_version",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "Spec Version",
+            "semantic_property": "Spec version"
+        },
+        {
+            "key": "id",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "ID",
+            "semantic_property": "Id"
+        },
+        {
+            "key": "created_by",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "Created by",
+            "semantic_property": "Created by"
+        },
+        {
+            "key": "created",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "Created",
+            "semantic_property": "Created"
+        },
+        {
+            "key": "modified",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "Modified",
+            "semantic_property": "Modified"
+        },
+        {
+            "key": "revoked",
+            "field-type": "checkbox",
+            "value-type": "boolean",
+            "label": "Revoked",
+            "semantic_property": "Revoked"
+        },
+        {
+            "key": "signee",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "Signee",
+            "semantic_property": "Signee"
+        },
+        {
+            "key": "valid_from",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "Valid From",
+            "semantic_property": "Valid from"
+        },
+        {
+            "key": "valid_until",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "Valid Until",
+            "semantic_property": "Valid until"
+        },
+        {
+            "key": "related_to",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "Related to",
+            "semantic_property": "Related to"
+        },
+        {
+            "key": "related_version",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "Related Version",
+            "semantic_property": "Related version"
+        },
+        {
+            "key": "sha256",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "Sha256",
+            "semantic_property": "Sha256"
+        },
+        {
+            "key": "algorithm",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "Algorithm",
+            "semantic_property": "Algorithm"
+        },
+        {
+            "key": "public_keys",
+            "field-type": "list",
+            "value-type": "object",
+            "label": "Public Keys",
+            "semantic_property": "Public keys"
+        },
+        {
+            "key": "cert_url",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "Cert URL",
+            "semantic_property": "Cert url"
+        },
+        {
+            "key": "thumbprint",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "Thumbprint",
+            "semantic_property": "Thumbprint"
+        },
+        {
+            "key": "value",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "Value",
+            "semantic_property": "Value"
+        }
+    ]
+}

@@ -1,0 +1,17 @@
+{% if entry.type == "List" %}
+  <ul class="playbook-object-view-list">
+    {% for entry_obj in entry.entries %}
+      <li>{% include "components/object_table_entry.html" with entry=entry_obj %}</li>
+    {% endfor %}
+  </ul>
+{% elif entry.type == "Json" %}
+  <div class="card">
+    <pre class="json-field">{{entry.text}}</pre>
+  </div>
+{% elif entry.type == "Dict" %}
+  {% include "components/object_table.html" with fields=entry.content %}
+{% elif entry.type == "Href" %}
+    <a href="{{entry.href}}">{{entry.text}}</a>
+{% else %}
+    {{entry.text}}
+{% endif %}

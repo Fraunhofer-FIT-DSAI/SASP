@@ -1,0 +1,55 @@
+{
+    "metadata": {
+        "schema": "CACAO 1.1",
+        "schema-url": "https://docs.oasis-open.org/cacao/security-playbooks/v1.1/security-playbooks-v1.1.html",
+        "title": "Extension",
+        "key": "Extension"
+    },
+    "fields": [
+        {
+            "key": "type",
+            "field-type": "choose-one",
+            "value-type": "string",
+            "options": [
+                "extension-definition"
+            ],
+            "label": "Type",
+            "semantic_property": "Type"
+        },
+        {
+            "key": "name",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "Name",
+            "semantic_property": "Name"
+        },
+        {
+            "key": "description",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "Description",
+            "semantic_property": "Description"
+        },
+        {
+            "key": "created_by",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "Created by",
+            "semantic_property": "Created by"
+        },
+        {
+            "key": "schema",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "Schema",
+            "semantic_property": "Schema"
+        },
+        {
+            "key": "version",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "Version",
+            "semantic_property": "Version"
+        }
+    ]
+}

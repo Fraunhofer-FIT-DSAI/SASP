@@ -1,0 +1,97 @@
+{
+    "metadata": {
+        "schema": "CACAO 1.1",
+        "schema-url": "https://docs.oasis-open.org/cacao/security-playbooks/v1.1/security-playbooks-v1.1.html",
+        "title": "End Step",
+        "key": "End Step"
+    },
+    "fields": [
+        {
+            "key": "type",
+            "field-type": "choose-one",
+            "value-type": "string",
+            "options": [
+                "end"
+            ],
+            "label": "Type",
+            "semantic_property": "Type"
+        },
+        {
+            "key": "name",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "Name",
+            "semantic_property": "Name"
+        },
+        {
+            "key": "description",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "Description",
+            "semantic_property": "Description"
+        },
+        {
+            "key": "external_references",
+            "field-type": "list",
+            "value-type": "object",
+            "label": "External References",
+            "semantic_property": "external_references"
+        },
+        {
+            "key": "delay",
+            "field-type": "text",
+            "value-type": "int",
+            "label": "Delay",
+            "semantic_property": "Delay"
+        },
+        {
+            "key": "timeout",
+            "field-type": "text",
+            "value-type": "int",
+            "label": "Timeout",
+            "semantic_property": "Timeout"
+        },
+        {
+            "key": "step_variables",
+            "field-type": "list",
+            "value-type": "object",
+            "label": "Step Variables",
+            "semantic_property": "step_variables"
+        },
+        {
+            "key": "owner",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "Owner",
+            "semantic_property": "Owner"
+        },
+        {
+            "key": "on_completion",
+            "field-type": "text",
+            "value-type": "object",
+            "label": "On Completion",
+            "semantic_property": "on_completion"
+        },
+        {
+            "key": "on_success",
+            "field-type": "text",
+            "value-type": "object",
+            "label": "On Success",
+            "semantic_property": "on_success"
+        },
+        {
+            "key": "on_failure",
+            "field-type": "text",
+            "value-type": "object",
+            "label": "On Failure",
+            "semantic_property": "on_failure"
+        },
+        {
+            "key": "step_extensions",
+            "field-type": "list",
+            "value-type": "object",
+            "label": "Step Extensions",
+            "semantic_property": "Step extensions"
+        }
+    ]
+}

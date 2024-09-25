@@ -1,0 +1,24 @@
+{
+    "metadata": {
+        "schema": "SAPPAN",
+        "schema-url": "None",
+        "title": "Test",
+        "key": "Test"
+    },
+    "fields": [
+        {
+            "key": "field_name2",
+            "field-type": "list",
+            "value-type": "object",
+            "label": "display_label2",
+            "semantic_property": "ActionObjectProperty"
+        },
+        {
+            "key": "field_name",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "display_label",
+            "semantic_property": "ActionDataProperty"
+        }
+    ]
+}

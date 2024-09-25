@@ -1,0 +1,51 @@
+{
+    "metadata": {
+        "schema": "SAPPAN",
+        "schema-url": "None",
+        "title": "Initial Step",
+        "key": "Initial Step"
+    },
+    "fields": [
+        {
+            "key": "name",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "Name",
+            "semantic_property": "HasName"
+        },
+        {
+            "key": "description",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "Description",
+            "semantic_property": "HasDescription"
+        },
+        {
+            "key": "hasConfidentiality",
+            "field-type": "choose-one",
+            "value-type": "string",
+            "options": [
+                "TLP:WHITE",
+                "TLP:GREEN",
+                "TLP:AMBER",
+                "TLP:RED"
+            ],
+            "label": "Confidentiality",
+            "semantic_property": "HasConfidentiality"
+        },
+        {
+            "key": "hasNextStep",
+            "field-type": "list",
+            "value-type": "object",
+            "label": "Next Step(s)",
+            "semantic_property": "HasNextStep"
+        },
+        {
+            "key": "isStepOf",
+            "field-type": "list",
+            "value-type": "object",
+            "label": "Step of",
+            "semantic_property": "IsStepOf"
+        }
+    ]
+}

@@ -1,0 +1,176 @@
+{% extends "base_generic.html" %}
+
+{% block extra_head %}
+{% load urlparams %}
+{% endblock %}
+
+{% block content %}
+    {% block heading %}
+    <h1>TheHive Dashboard</h1>
+    <!-- If disconnected display warning here -->
+    {% if not logged_in %}
+        <div class="alert alert-danger" role="alert">
+            <h4 class="alert-heading">Warning!</h4>
+            <p>TheHive is not connected. Please check your configuration.</p>
+        </div>
+    {% endif %}
+    {% if not cortex_logged_in %}
+        <div class="alert alert-danger" role="alert">
+            <h4 class="alert-heading">Warning!</h4>
+            <p>Cortex is not connected. Please check your configuration.</p>
+        </div>
+    {% endif %}
+    {% if form.errors %}
+        <div class="alert alert-danger" role="alert">
+            <h4 class="alert-heading">Form reported errors:</h4>
+            <div>{{ form.errors }}</div>
+        </div>
+    {% endif %}
+    {% endblock %}
+    {% if case_list and playbook_list and logged_in and cortex_logged_in %}
+        <form action="" method="post">
+            {% csrf_token %}
+            <table>
+                <td>{{ form.playbook_choice }}</td>
+                <td>{{ form.case_choice  }}</td>
+                <td><button type="submit" class="btn btn-primary btn-sm">Execute</button></td>
+            </table>
+        </form>
+    {% endif %}
+    <h2>Open Cases on The Hive</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">caseID</th>
+                <th scope="col">Title</th>
+                <th scope="col">Description</th>
+                <th scope="col">createdBy</th>
+                <th scope="col">updatedBy</th>
+                <th scope="col">tags</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if case_list %}
+                {% for case in case_list %}
+                    <tr id="{{case.idx}}">
+                        <td>{{ case.caseID }}</td>
+                        <td>{{ case.title }}</td>
+                        <td>{{ case.description }}</td>
+                        <td>{{ case.createdBy }}</td>
+                        <td>{{ case.updatedBy }}</td>
+                        <td>{{ case.tags }}</td>
+                    </tr>
+                    <script>
+                        $(document).ready(function() {
+                            $("#{{case.idx}}").click(function() {
+                                window.open("{{case.href}}");
+                                {% comment %} window.location = "{{case.href}}"; {% endcomment %}
+                            });
+                            $("#{{case.idx}}").css('cursor', 'pointer');
+                            $("#{{case.idx}}").hover(function() {
+                                $(this).css('background-color', '#f5f5f5');
+                            }, function() {
+                                $(this).css('background-color', '');
+                            });
+                        });
+                    </script>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="7">-</td>
+                </tr>
+            {% endif %}
+        </tbody>    
+    </table>
+    <h2>Playbooks in the Database</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">Name</th>
+                <th scope="col">Wiki Name</th>
+                <th scope="col">Tags</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if playbook_list %}
+                {% for playbook in playbook_list %}
+                    <tr id="{{playbook.idx}}">
+                        <td>{{ playbook.name }}</td>
+                        <td>{{ playbook.wiki_page_name }}</td>
+                        <td>{{ playbook.tags }}</td>                        
+                    </tr>
+                    <script>
+                        $(document).ready(function() {
+                            $("#{{playbook.idx}}").click(function() {
+                                window.open("{{playbook.href}}");
+                                {% comment %} window.location = "{{playbook.href}}"; {% endcomment %}
+                            });
+                            $("#{{playbook.idx}}").css('cursor', 'pointer');
+                            $("#{{playbook.idx}}").hover(function() {
+                                $(this).css('background-color', '#f5f5f5');
+                            }, function() {
+                                $(this).css('background-color', '');
+                            });
+                        });
+                    </script>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="3">-</td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
+    <h2>Active Playbook Executions</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">Playbook Name</th>
+                <th scope="col">CaseID</th>
+                <th scope="col">Status</th>
+                <th scope="col">Started</th>
+                <th scope="col">Last Update</th>
+                <th scope="col">Completed</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if active_runs_list %}
+                {% for active_run in active_runs_list %}
+                    <tr id="{{active_run.idx}}">
+                        <td>{{ active_run.playbook_id }}</td>
+                        <td>{{ active_run.case_id }}</td>
+                        <td>{{ active_run.status }}</td>
+                        <td>{{ active_run.started }}</td>
+                        <td>{{ active_run.last_update }}</td>
+                        <td>{{ active_run.completed }}</td>
+                    </tr>
+                    <script>
+                        $(document).ready(function() {
+                            $("#{{active_run.idx}}").click(function() {
+                                window.open("{{active_run.href}}");
+                                {% comment %} window.location = "{{case.href}}"; {% endcomment %}
+                            });
+                            $("#{{active_run.idx}}").css('cursor', 'pointer');
+                            $("#{{active_run.idx}}").hover(function() {
+                                $(this).css('background-color', '#f5f5f5');
+                            }, function() {
+                                $(this).css('background-color', '');
+                            });
+                        });
+                    </script>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="6">-</td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
+    {% block results %}
+
+    {% endblock %}
+{% endblock %}
+
+{% block title %}
+<title>TheHive Dashboard</title>
+{% endblock %}

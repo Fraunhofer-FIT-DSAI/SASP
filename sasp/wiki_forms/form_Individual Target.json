@@ -1,0 +1,55 @@
+{
+    "metadata": {
+        "schema": "CACAO 1.1",
+        "schema-url": "https://docs.oasis-open.org/cacao/security-playbooks/v1.1/security-playbooks-v1.1.html",
+        "title": "Individual Target",
+        "key": "Individual Target"
+    },
+    "fields": [
+        {
+            "key": "type",
+            "field-type": "choose-one",
+            "value-type": "string",
+            "options": [
+                "individual"
+            ],
+            "label": "Type",
+            "semantic_property": "Type"
+        },
+        {
+            "key": "name",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "Name",
+            "semantic_property": "Name"
+        },
+        {
+            "key": "description",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "Description",
+            "semantic_property": "Description"
+        },
+        {
+            "key": "target_extensions",
+            "field-type": "list",
+            "value-type": "object",
+            "label": "Target Extension",
+            "semantic_property": "Target extensions"
+        },
+        {
+            "key": "contact",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "Contact",
+            "semantic_property": "Contact"
+        },
+        {
+            "key": "location",
+            "field-type": "text",
+            "value-type": "object",
+            "label": "Location",
+            "semantic_property": "Location"
+        }
+    ]
+}

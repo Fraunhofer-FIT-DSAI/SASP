@@ -1,0 +1,19 @@
+<li class="nav-item"><a class="nav-link" href="{% url 'index' %}">Home</a></li>
+{% if sidebar %}
+<ul class="navbar-nav mr-auto">
+    {% for header, section_collapse, obj_list in sidebar %}
+    <li class="nav-item mt-2"><h5><a class="nav-link" data-bs-toggle="collapse" href="#sidebar-{{header|slugify}}" role="button" aria-expanded="false" aria-controls="sidebar-{{header}}">{{header}}</a></h5></li>
+    <div class="{{section_collapse}}" id="sidebar-{{header|slugify}}">
+    <ul class="navbar-nav mr-auto">
+        {% for name,href, active, priority in obj_list %}
+        {% if active %}
+        <li class="nav-item"><a class="sidebar-nav-active nav-link active ps-1" href="{{ href }}">{{ name }}</a></li>
+        {% else %}
+        <li class="nav-item"><a class="nav-link" href="{{ href }}">{{ name }}</a></li>
+        {% endif %}
+        {% endfor %}
+    </ul>
+    </div>
+    {% endfor %}
+</ul>
+{% endif %}

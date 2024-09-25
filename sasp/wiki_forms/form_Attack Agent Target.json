@@ -1,0 +1,55 @@
+{
+    "metadata": {
+        "schema": "CACAO 1.1",
+        "schema-url": "https://docs.oasis-open.org/cacao/security-playbooks/v1.1/security-playbooks-v1.1.html",
+        "title": "Attack Agent Target",
+        "key": "Attack Agent Target"
+    },
+    "fields": [
+        {
+            "key": "type",
+            "field-type": "choose-one",
+            "value-type": "string",
+            "options": [
+                "attack-agent"
+            ],
+            "label": "Type",
+            "semantic_property": "Type"
+        },
+        {
+            "key": "name",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "Name",
+            "semantic_property": "Name"
+        },
+        {
+            "key": "description",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "Description",
+            "semantic_property": "Description"
+        },
+        {
+            "key": "target_extensions",
+            "field-type": "list",
+            "value-type": "object",
+            "label": "Target Extension",
+            "semantic_property": "Target extensions"
+        },
+        {
+            "key": "address",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "Address",
+            "semantic_property": "Address"
+        },
+        {
+            "key": "agent-type",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "Agent Type",
+            "semantic_property": "Agent-type"
+        }
+    ]
+}

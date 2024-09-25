@@ -1,0 +1,41 @@
+{% extends "base_generic.html" %}
+
+{% block title %}
+<title>{{name}}</title>
+{% endblock %}
+
+{% block extended_locations %}
+{% if topbar.wiki_url %}
+<li class="nav-item"><a href="{{ topbar.wiki_url }}" class="nav-link" target="_blank">View on Wiki</a></li>
+{% else %}
+<li class="nav-item"><a class="nav-link disabled">View on Wiki</a></li>
+{% endif %}
+<li class="nav-item"><a href="{{ topbar.bpmn_url }}" class="nav-link" target="_blank">BPMN</a></li>
+{% endblock %}
+
+{% block sidebar_entries %}
+<li class="nav-item"><a class="nav-link" href="{% url 'index' %}">Home</a></li>
+<ul class="navbar-nav mr-auto">
+    {% for header, section_collapse, obj_list in sidebar %}
+    <li class="nav-item mt-2"><h5><a class="nav-link" data-bs-toggle="collapse" href="#sidebar-{{header|slugify}}" role="button" aria-expanded="false" aria-controls="sidebar-{{header}}">{{header}}</a></h5></li>
+    <div class="{{section_collapse}}" id="sidebar-{{header|slugify}}">
+    <ul class="navbar-nav mr-auto">
+        {% for name,href, active, priority in obj_list %}
+        {% if active %}
+        <li class="nav-item"><a class="sidebar-nav-active nav-link active" href="{{ href }}">{{ name }}</a></li>
+        {% else %}
+        <li class="nav-item"><a class="nav-link" href="{{ href }}">{{ name }}</a></li>
+        {% endif %}
+        {% endfor %}
+    </ul>
+    </div>
+    {% endfor %}
+</ul>
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}
+
+{% block modals %}
+{% include "components/modals/archive_form.html" with modal=modals.modal_archive_form %}
+{% endblock modals %}

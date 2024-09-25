@@ -1,0 +1,79 @@
+{
+    "metadata": {
+        "schema": "SAPPAN",
+        "schema-url": "None",
+        "title": "Intermediate Step",
+        "key": "Intermediate Step"
+    },
+    "fields": [
+        {
+            "key": "name",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "Name",
+            "semantic_property": "HasName"
+        },
+        {
+            "key": "description",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "Description",
+            "semantic_property": "HasDescription"
+        },
+        {
+            "key": "hasConfidentiality",
+            "field-type": "choose-one",
+            "value-type": "string",
+            "options": [
+                "TLP:WHITE",
+                "TLP:GREEN",
+                "TLP:AMBER",
+                "TLP:RED"
+            ],
+            "label": "Confidentiality",
+            "semantic_property": "HasConfidentiality"
+        },
+        {
+            "key": "hasMean",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "Mean",
+            "semantic_property": "HasMean"
+        },
+        {
+            "key": "isStepOf",
+            "field-type": "list",
+            "value-type": "object",
+            "label": "Step of",
+            "semantic_property": "IsStepOf"
+        },
+        {
+            "key": "performAction",
+            "field-type": "list",
+            "value-type": "object",
+            "label": "Perform Action(s)",
+            "semantic_property": "PerformAction"
+        },
+        {
+            "key": "hasPreviousStep",
+            "field-type": "list",
+            "value-type": "object",
+            "label": "Previous Step(s)",
+            "semantic_property": "HasPreviousStep"
+        },
+        {
+            "key": "hasNextStep",
+            "field-type": "list",
+            "value-type": "object",
+            "label": "Next Step(s)",
+            "semantic_property": "HasNextStep"
+        },
+        {
+            "key": "hasOptionalStep",
+            "field-type": "list",
+            "value-type": "object",
+            "label": "Optional Step(s)",
+            "semantic_property": "HasOptionalStep"
+        }
+    ]
+}

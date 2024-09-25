@@ -1,0 +1,31 @@
+{
+    "metadata": {
+        "schema": "SAPPAN",
+        "schema-url": "None",
+        "title": "GPS Location",
+        "key": "GPS Location"
+    },
+    "fields": [
+        {
+            "key": "latitude",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "Latitude",
+            "semantic_property": "Latitude"
+        },
+        {
+            "key": "longitude",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "Longitude",
+            "semantic_property": "Longitude"
+        },
+        {
+            "key": "precision",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "Precision",
+            "semantic_property": "Precision"
+        }
+    ]
+}

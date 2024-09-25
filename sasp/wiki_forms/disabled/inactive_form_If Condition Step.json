@@ -1,0 +1,125 @@
+{
+    "metadata": {
+        "schema": "CACAO 1.1",
+        "schema-url": "https://docs.oasis-open.org/cacao/security-playbooks/v1.1/security-playbooks-v1.1.html",
+        "title": "If Condition Step",
+        "key": "Test If Condition Step"
+    },
+    "fields": [
+        {
+            "key": "Test type",
+            "field-type": "choose-one",
+            "value-type": "string",
+            "options": [
+                "if-condition"
+            ],
+            "label": "Type",
+            "semantic_property": "Test Type"
+        },
+        {
+            "key": "Test name",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "Name",
+            "semantic_property": "Test Name"
+        },
+        {
+            "key": "Test description",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "Description",
+            "semantic_property": "Test Description"
+        },
+        {
+            "key": "Test external_references",
+            "field-type": "list",
+            "value-type": "object",
+            "label": "External References",
+            "semantic_property": "Test external_references"
+        },
+        {
+            "key": "Test delay",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "Delay",
+            "semantic_property": "Test Delay"
+        },
+        {
+            "key": "Test timeout",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "Timeout",
+            "semantic_property": "Test Timeout"
+        },
+        {
+            "key": "Test New property",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "Timeout",
+            "semantic_property": "Test New property"
+        },
+        {
+            "key": "Test step_variables",
+            "field-type": "list",
+            "value-type": "object",
+            "label": "Step Variables",
+            "semantic_property": "Test step_variables"
+        },
+        {
+            "key": "Test Owner",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "Owner",
+            "semantic_property": "Test Owner"
+        },
+        {
+            "key": "Test on_completion",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "On Completion",
+            "semantic_property": "Test on_completion"
+        },
+        {
+            "key": "Test on_success",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "On Success",
+            "semantic_property": "Test on_success"
+        },
+        {
+            "key": "Test on_failure",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "On Failure",
+            "semantic_property": "Test on_failure"
+        },
+        {
+            "key": "Test step_extensions",
+            "field-type": "list",
+            "value-type": "object",
+            "label": "Step Extensions",
+            "semantic_property": "Test Step extensions"
+        },
+        {
+            "key": "Test condition",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "Condition",
+            "semantic_property": "Test Condition"
+        },
+        {
+            "key": "Test on_true",
+            "field-type": "list",
+            "value-type": "object",
+            "label": "On True",
+            "semantic_property": "Test On true"
+        },
+        {
+            "key": "Test on_false",
+            "field-type": "list",
+            "value-type": "object",
+            "label": "On False",
+            "semantic_property": "Test On false"
+        }
+    ]
+}

@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    {% block title %}
+      <title>{{title|default:"NO TITLE DEFINED" }}</title>
+    {% endblock %}
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    
+    {% include "js/bootstrap.html" %}
+    {% block extra_head %}
+
+    {% endblock %}
+    <!-- Add additional CSS in static file -->
+    <!-- Custom CSS -->
+     {% load static %}
+    <link rel="stylesheet" href="{% static 'css/custom/styles.css' %}" />
+    <!-- Favicon -->
+    <link rel="shortcut icon" type="image/png" href="{% static 'icons/favicon.ico' %}" />
+  </head>
+  <body>
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-md-2"></div>
+        <div class="col-md-9">
+          <nav class="navbar navbar-expand-lg bg-body-secondary mb-2 mt-2 rounded-pill">
+            <div class="container-fluid">
+              <a class="navbar-brand" href="{% url 'index' %}">SASP</a>
+              <ul class="navbar-nav flex-row flex-wrap bg-body-tertiary rounded-pill">
+                {% comment %}Locations on page{% endcomment %}
+                {% block basic_locations %}
+                  <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                      {{ locations.basic.import.label }}
+                    </a>
+                    <ul class="dropdown-menu">
+                      {% for location in locations.basic.import.locations %}
+                      <li><a class="dropdown-item {% if location.disabled %}disabled{% endif %}" href="{{ location.href|default:"#" }}">{{ location.label|default:"Missing Label" }}</a></li>
+                      {% endfor %}
+                    </ul>
+                  </li>
+                  <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                      {{ locations.basic.export.label }}
+                    </a>
+                    <ul class="dropdown-menu">
+                      {% for location in locations.basic.export.locations %}
+                      <li><a class="dropdown-item {% if location.disabled %}disabled{% endif %}" href="{{ location.href|default:"#" }}">{{ location.label|default:"Missing Label" }}</a></li>
+                      {% endfor %}
+                    </ul>
+                  </li>
+                  <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                      {{ locations.basic.tools.label }}
+                    </a>
+                    <ul class="dropdown-menu">
+                      {% for location in locations.basic.tools.locations %}
+                      <li><a class="dropdown-item {% if location.disabled %}disabled{% endif %}" href="{{ location.href|default:"#" }}">{{ location.label|default:"Missing Label" }}</a></li>
+                      {% endfor %}
+                    </ul>
+                  </li>
+                  {% for location in locations.basic.uncategorized %}
+                  <li class="nav-item">
+                    <a class="nav-link {% if location.disabled %}disabled{% endif %}" href="{{ location.href|default:"#" }}">{{ location.label|default:"Missing Label" }}</a>
+                  </li>
+                  {% endfor %}
+                {% endblock basic_locations %}
+                {% block extended_locations %}
+
+                {% endblock extended_locations %}
+              </ul>
+              <span class="navbar-text ms-auto">
+                {% block nav_user %}
+                  {% if user.is_anonymous %}
+                    Not logged in
+                  {% else %}
+                    Logged in as {{ user.profile.get_display_id }} (<a href="{% url 'logout' %}">Logout</a>)
+                  {% endif %}
+                {% endblock nav_user %}
+              </span>
+              <ul class="navbar-nav flex-row flex-wrap ms-md-auto me-3">
+                {% comment %}Actions for page{% endcomment %}
+                {% block basic_actions %}
+                {% for id,object in topbar.buttons.basic.items %}
+                    {% if object.type_ == "button" %}
+                      {% include "components/nav_button.html" with button=object %}
+                    {% elif object.type_ == "modal_button" %}
+                      {% include "components/nav_modal_button.html" with button=object %}
+                    {% elif object.type_ == "dropdown" %}
+                      {% include "components/nav_dropdown.html" with dropdown=object %}
+                    {% endif %}
+                {% endfor %}
+                {% endblock %}
+                {% block extended_actions %}
+                {% for id,object in topbar.buttons.extended.items %}
+                    {% if object.type_ == "button" %}
+                      {% include "components/nav_button.html" with button=object %}
+                    {% elif object.type_ == "modal_button" %}
+                      {% include "components/nav_modal_button.html" with button=object %}
+                    {% elif object.type_ == "dropdown" %}
+                      {% include "components/nav_dropdown.html" with dropdown=object %}
+                    {% endif %}
+                {% endfor %}
+                {% endblock %}
+                {% comment %}Help button, shouldn't need overriding{% endcomment %}
+                {% block help_button %}
+                  {% if help_text %}
+                    <li class="nav-item">
+                      <button type="button" class="btn btn-sm btn-outline-info mt-1" data-bs-toggle="popover" title="{{ help_text.title }}" data-bs-content="{{ help_text.content|default:'' }}">Help</button>
+                    </li>
+                  {% else %}
+                    <li class="nav-item">
+                      <button type="button" class="btn btn-sm btn-outline-info mt-1" disabled>Help</button>
+                    </li>
+                  {% endif %}
+                {% endblock help_button %}
+                {% block settings_button %}
+                  <li>
+                    <a class="nav-item btn btn-sm btn-outline-info ms-1 mt-1" href="{% url 'settings' %}">Settings</a>
+                  </li>
+                {% endblock settings_button %}
+              </ul>
+            </div>
+          </nav>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-2">
+          {% block sidebar %}
+            <nav class="navbar-nav-scroll mw-100 sticky-top pe-2" style="--bs-scroll-height: 100vh;">
+              <ul class="sidebar-nav navbar-nav mr-auto">
+                {% block sidebar_entries %}
+                  {% include "components/sidebar.html" %}
+                {% endblock %}
+              </ul>
+            </nav>
+          {% endblock %}
+        </div>
+        <div class="col-md-9">
+          {% load django_bootstrap5 %}
+          <div class="row">
+            <div class="col-md-12">
+              {% bootstrap_messages %}
+            </div>
+          </div>
+          <div class="row">
+            {% block messages %}
+              <div class="col-md-12">
+                {% for info in messages.info %}
+                  <div class="alert alert-info alert-dismissible fade show" role="alert">
+                    {{ info }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                  </div>
+                {% endfor %}
+                {% for warning in messages.warning %}
+                  <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                    {{ warning }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                  </div>
+                {% endfor %}
+                {% for error in messages.error %}
+                  <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    {{ error }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                  </div>
+                {% endfor %}
+              </div>
+            {% endblock %}
+          </div>
+          <div class="row">
+            {% block content %}
+              <div class="col-md-12">
+                <h1>NO CONTENT DEFINED</h1>
+              </div>
+            {% endblock %}
+          </div>
+        </div>
+      </div>
+    </div>
+    <footer class="footer mt-5">
+      {% block footer %}
+      <div class="container">
+        <span class="text-muted">SASP - Semantic web-based Approach for management of Sharable cybersecurity Playbooks</span>
+      </div>
+      {% endblock footer %}
+    </footer>
+    {% block modals %}
+    {% endblock modals %}
+    <!-- Help text popover -->
+    <script defer>
+      const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]')
+      const popoverList = [...popoverTriggerList].map((popoverTriggerEl) => new bootstrap.Popover(popoverTriggerEl))
+    </script>
+    {% block extra_js %}
+
+    {% endblock %}
+  </body>
+</html>

@@ -1,0 +1,85 @@
+# Any form should have the format described below and saved as either a .yaml or .json file. Active forms MUST have the prefix 'form_', 
+# inactive forms SHOULD have the prefix 'inactive_form_'. Files containing info on the form format, like this one, SHOULD have the prefix 'template_'.
+{ 
+    "form_description" : # This describes the format for forms, actual form definitions contain only this dictionary object, or a list of these objects
+        {
+            "metadata" : # A dictionary object describing the form
+                {
+                    "schema": "The playbook standard this form represents including version (e.g. 'CACAO 1.1')",
+                    "schema-url": "A URL to a document describing the schema",
+                    # If this form is based on an extension of the CACAO standard, the schema should be the extension identifier and the schema_url should be the URL to the extension document
+
+                    "title": "A human-readable title for the form (e.g. 'Incident Report')",
+                    "key" : "A unique identifier for the form (e.g. 'incident-report') alphanumeric, dashes and underscores only",
+                    "is-extension" : "(Optional) A boolean indicating whether this form extends another, default is false",
+                    "definition-key" : "(Optional) If this form extends another, 'definition-key' is the identifier for the base form, 'key' is the identifier for this form definition, default is same as 'key'",
+                    # Example: if the base form is 'incident-report' and this form is 'incident-report-extended', the 'key' is 'incident-report' and the 'definition-key' is 'incident-report-extended'
+
+                    "priority" : "(Optional) A number indicating the priority of the form, in case of conflict this determines the order in which forms are merged, default is 0. If two forms have the same priority, the forms are merged in alphabetical order by definition-key.",
+                    "description" : "(Optional) A human-readable description of the form",
+                    "version" : "(Optional) A version number for the form",
+                    "author" : "(Optional) The author of the form",
+                    "author-url" : "(Optional) A URL to the author's website",
+                    "license" : "(Optional) The license under which the form is released",
+                },
+            "fields" : 
+                # A list of dictionary objects describing the fields in the form
+                # if this form extends another, the keys in this list add to the keys in the base form and override any keys with the same key
+                [   
+                    {
+                        "key" : "(String) A unique identifier for the field (e.g. 'name') alphanumeric, dashes and underscores only",
+                        "field-type" : "(String) The type of the field, SHOULD come from the list of types below, default is 'text'",
+                        "value-type" : "(String) The type of the value, SHOULD come from the list of types below, default is 'string'",
+                        "options" : "([String], Optional) A list of options for the field, if the field-type is 'choose-one' or 'choose-many', this is a list of options from which the user must choose",
+                        "label" : "(String, Optional) A human-readable label for the field (e.g. 'Name')",
+                        "description" : "(String, Optional) A human-readable description of the field",
+                        "required" : "(Boolean, Optional) A boolean indicating whether the field is required, default is false",
+                        "order_priority" : "(Integer, Optional) If defined, this field will be ordered before fields without this key, and fields with a lower value will be ordered before fields with a higher value",
+                        "semantic_property" : "(String, Optional) The name of the semantic property this field represents, if not defined, the key is used",
+                        "seperator" : "(String, Optional) A string to be used as a seperator between values in the field, if not defined, the default seperator (,) is used",
+                        "default" : "(String, Optional) A default value for the field",
+                    },
+                    # {
+                    #     "key" : "(String) A unique identifier for the field (e.g. 'name')",
+                    #     "field-type" : "(String) The type of the field, SHOULD come from the list of types below, default is 'text'",
+                    #     "value-type" : "(String) The type of the value, SHOULD come from the list of types below, default is 'string'",
+                    #     "label" : "(String, Optional) A human-readable label for the field (e.g. 'Name')",
+                    #     "description" : "(String, Optional) A human-readable description of the field",
+                    #     "required" : "(Boolean, Optional) A boolean indicating whether the field is required, default is false",
+                    #     "order_priority" : "(Integer, Optional) If defined, this field will be ordered before fields without this key, and fields with a lower value will be ordered before fields with a higher value",
+                    # },
+                    # {
+                    #     "..."
+                    # },
+                ],
+            "negative-fields" : 
+            # (Optional) If this form extends another, the keys in this list remove keys from the base form, if the key is not in the base form, it is ignored
+            # if this form does not extend another, or the extended form cannot be found, this list is ignored
+                [
+                    "(String) A key to remove from the base form",
+                    "(String) A key to remove from the base form",
+                    "..."
+                ],
+        },
+    "field-types" : # A list of field types that can be used in the form
+        [
+            "text", # A single line of text (e.g. name, email, phone number)
+            "textarea", # A multi-line text area (e.g. address, description)
+            "list", # A list of values with no minimum or maximum length
+            "choose-one", # A list of values from which the user must choose exactly one (e.g. a dropdown menu)
+            "choose-many", # A list of values from which the user must choose at least one (e.g. a list of checkboxes)
+            "checkbox", # A boolean value
+            "date", # A date value
+        ],
+    "value-types" : # A list of value types that can be used in the form
+        [
+            "string", # Meaning a string
+            "int", # Meaning an integer
+            "float", # Meaning a float
+            "boolean", # Meaning a boolean
+            "date (TIMEFORMAT)", # TIMEFORMAT is a string representing the format of the date, in accordance with the strftime() function of the Python datetime module
+            "object", # Meaning a foreign key, which is a string
+            "array", # Meaning a list of values, which is a list of strings, field-type SHOULD be "text" or "textarea", try to avoid using this, use "list" instead
+            "dict", # Meaning a dictionary of values, which is a dictionary of strings, encoded as json, field-type SHOULD be "text" or "textarea", try to avoid using this, use "list" of "object" instead
+        ],
+}

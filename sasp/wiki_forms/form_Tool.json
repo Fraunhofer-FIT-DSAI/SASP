@@ -1,0 +1,52 @@
+{
+    "metadata": {
+        "schema": "SAPPAN",
+        "schema-url": "None",
+        "title": "Tool",
+        "key": "Tool"
+    },
+    "fields": [
+        {
+            "key": "hasToolName",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "Name",
+            "semantic_property": "HasToolName"
+        },
+        {
+            "key": "knownAlias",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "Alias",
+            "semantic_property": "KnownAlias"
+        },
+        {
+            "key": "hasToolType",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "Type",
+            "semantic_property": "HasToolType"
+        },
+        {
+            "key": "documentationLocation",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "Documentation Location",
+            "semantic_property": "DocumentationLocation"
+        },
+        {
+            "key": "toolHomepage",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "Homepage",
+            "semantic_property": "ToolHomepage"
+        },
+        {
+            "key": "localInstance",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "Local Instance",
+            "semantic_property": "LocalInstance"
+        }
+    ]
+}

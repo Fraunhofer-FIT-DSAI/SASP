@@ -1,0 +1,65 @@
+{
+    "metadata": {
+        "schema": "SAPPAN",
+        "schema-url": "None",
+        "title": "Exclusive Choice Step",
+        "key": "Exclusive Choice Step"
+    },
+    "fields": [
+        {
+            "key": "name",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "Name",
+            "semantic_property": "HasName"
+        },
+        {
+            "key": "description",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "Description",
+            "semantic_property": "HasDescription"
+        },
+        {
+            "key": "hasMean",
+            "field-type": "text",
+            "value-type": "string",
+            "label": "Mean",
+            "semantic_property": "HasMean"
+        },
+        {
+            "key": "hasConfidentiality",
+            "field-type": "choose-one",
+            "value-type": "string",
+            "options": [
+                "TLP:WHITE",
+                "TLP:GREEN",
+                "TLP:AMBER",
+                "TLP:RED"
+            ],
+            "label": "Confidentiality",
+            "semantic_property": "HasConfidentiality"
+        },
+        {
+            "key": "isStepOf",
+            "field-type": "list",
+            "value-type": "object",
+            "label": "Step of",
+            "semantic_property": "IsStepOf"
+        },
+        {
+            "key": "hasPreviousStep",
+            "field-type": "list",
+            "value-type": "object",
+            "label": "Previous Step(s)",
+            "semantic_property": "HasPreviousStep"
+        },
+        {
+            "key": "hasNextStep",
+            "field-type": "list",
+            "value-type": "object",
+            "label": "Next Step(s)",
+            "semantic_property": "HasNextStep"
+        }
+    ]
+}
