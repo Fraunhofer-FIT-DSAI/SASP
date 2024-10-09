@@ -1,4 +1,6 @@
 import logging
+import configparser
+import urllib.parse
 from pathlib import Path
 from dotenv import dotenv_values
 from .utils import wiki_name
@@ -21,10 +23,6 @@ FREE_TEXT_FIELDS = {
     'command',
     'commandb64'
 }
-
-# Supported SAPPAN File format
-SAPPAN_FILE_FORMAT = '0.2'
-SAPPAN_VERSION = '0.2.0'
 
 class Sharing:
     @classproperty
@@ -74,26 +72,27 @@ class KnowledgeBase:
     # Should point to capturing-tool
     project_folder = Path(__file__).parent / '..'
     # Points to the .env file containing the wiki configuration
-    dot_env_path = project_folder / 'config' / 'config.env'
-    dot_keys_env_path = project_folder / 'config' / 'keys.env'
+    config_path = project_folder / 'config' / 'config.ini'
+    config_keys_path = project_folder / 'config' / 'keys.ini'
     
-    dotenv = dotenv_values(dot_env_path)
-    dotenv_keys = dotenv_values(dot_keys_env_path)
-    host = dotenv['TOOL_HOST']
-    wiki_url_pattern = dotenv['URL'] + dotenv['USER_PATH'] + '{page_name}'
-    wiki_api_url = dotenv['URL'] + dotenv['API_PATH']
+    config = configparser.ConfigParser()
+    config.read(config_path)
+    config_keys = configparser.ConfigParser()
+    config_keys.read(config_keys_path)
+    
+    host = urllib.parse.urlparse(config.get('Wiki', 'url')).netloc
+    wiki_url_pattern = config.get('Wiki', 'url') + config.get('Wiki', 'user_path') + '{page_name}'
+    wiki_api_url = config.get('Wiki', 'url') + config.get('Wiki', 'api_path')
 
-    hive_url = dotenv['HIVE_URL']
-    hive_api_key = dotenv_keys.get('HIVE_API_KEY', None)
+    hive_url = None
+    hive_api_key = None
 
-    cortex_url = dotenv.get('CORTEX_URL','')
-    cortex_api_key = dotenv_keys.get('CORTEX_API_KEY','')
+    cortex_url = None
+    cortex_api_key = None
 
-    misp_url = dotenv.get('MISP_URL','')
-    misp_key = dotenv_keys.get('MISP_KEY','')
-    misp_cert = dotenv_keys.get('MISP_CERT', False)
-    del dotenv
-    del dotenv_keys
+    misp_url = config.get('MISP', 'url', fallback='')
+    misp_key = config_keys.get('MISP', 'key', fallback='')
+    misp_cert = config_keys.get('MISP', 'cert', fallback='')
     
     name_fields = {
         'name',

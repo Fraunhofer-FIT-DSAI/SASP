@@ -1,0 +1,13 @@
+confluent_kafka==2.5.3
+Django==5.1.1
+django-bootstrap5==24.2
+djangorestframework==3.15.2
+Jinja2==3.1.4
+jsonschema==4.23.0
+mwclient==0.11.0
+python-keycloak==4.3.0
+pymediawikidocker==0.13.1
+pymisp==2.4.197
+python-dotenv==1.0.1
+Requests==2.32.3
+rich==13.8.0

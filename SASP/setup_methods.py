@@ -3,7 +3,7 @@
 
 import subprocess
 import json
-import dotenv
+import configparser
 from pathlib import Path
 from rich import print as rprint
 
@@ -29,24 +29,16 @@ def warning(message: str):
 
 def check_config(config_path: Path):
     try:
-        config_data = dotenv.dotenv_values(config_path)
+        config_data = configparser.ConfigParser()
+        config_data.read(config_path)
     except Exception as e:
         abort_script(f"Error loading config file: {e}")
     
-    if config_data.get('GRAPHVIZ_PATH', None):
-        if not check_file_exists(Path(config_data['GRAPHVIZ_PATH'])):
-            warning(f"Graphviz path {config_data['GRAPHVIZ_PATH']} not found.")
-    else:
-        try:
-            subprocess.run(["dot", "-V"], check=True)
-        except Exception as e:
-            warning("Graphviz not found in PATH or config file. BPMN diagrams will not be rendered.")
-    
-    if not config_data.get('URL', None):
-        abort_script("Wiki URL not found in config file.")
-    if not config_data.get('USER_PATH', None):
+    if not config_data.get('Wiki', 'url', fallback=None):
+        abort_script("Wiki url not found in config file.")
+    if not config_data.get('Wiki', 'user_path', fallback=None):
         abort_script("User path not found in config file. This is the location of pages on the wiki e.g. '/wiki/' or '/index.php/'.")
-    if not config_data.get('API_PATH', None):
+    if not config_data.get('Wiki', 'api_path', fallback=None):
         abort_script("API path not found in config file. This is the location of the wiki API e.g. '/api.php/'.")
 
 def manage_setup_database(manage_file: Path, python_executable: str):

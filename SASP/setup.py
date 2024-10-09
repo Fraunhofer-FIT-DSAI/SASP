@@ -17,13 +17,13 @@ smw_cont = "smw42-mw"
 
 # Location of the python executable. If you are using a virtual environment, this should point to the python
 # executable in the virtual environment.
-python_executable = r"J:\Workspaces\Fraunhofer\Job\git\dockersmw\tools\wiki-tool\venv\Scripts\python.exe"
+python_executable = "python"
 
 # Location of the tools manage.py file. Should be in the same directory as this file.
 django_manage = Path(__file__).parent / "manage.py"
 
-config_file = Path(__file__).parent / "config" / "config.env"
-keys_file = Path(__file__).parent / "config" / "keys.env"
+config_file = Path(__file__).parent / "config" / "config.ini"
+keys_file = Path(__file__).parent / "config" / "keys.ini"
 
 example_playbooks = [
     Path(__file__).parent / "example playbooks" / "Automated Actions Playbook.json",
@@ -39,9 +39,9 @@ rprint("[blue]Step 1: Checking for required files[/]")
 if not(check_file_exists(django_manage)):
     abort_script(f"manage.py not found at {django_manage.resolve()}")
 if not(check_file_exists(config_file)):
-    abort_script(f"config.env not found at {config_file.resolve()}")
+    abort_script(f"config.ini not found at {config_file.resolve()}")
 if not(check_file_exists(keys_file)):
-    abort_script(f"keys.env not found at {keys_file.resolve()}")
+    abort_script(f"keys.ini not found at {keys_file.resolve()}")
 
 for example_playbook in example_playbooks:
     if not(check_file_exists(example_playbook)):

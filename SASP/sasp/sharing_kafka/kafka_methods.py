@@ -11,33 +11,6 @@ from pathlib import Path
 
 base_path = Path(__file__).parent
 
-PRODUCER_CONFIG = {
-    "client.id": "python-kafka-client",
-    "bootstrap.servers": "kafka.cyberseas-io.eu:9092",
-    "security.protocol": "SSL",
-    "ssl.ca.location": base_path / "ca/ca-cert.pem",
-    "ssl.certificate.location": base_path / "sappan/sappan-cert.pem",
-    "ssl.key.location": base_path / "sappan/sappan-key.pem"
-}
-
-CONSUMER_CONFIG = {
-    "client.id": "python-kafka-client",
-    "group.id": "python-kafka-consumer",
-    "bootstrap.servers": "kafka.cyberseas-io.eu:9092",
-    "auto.offset.reset": "earliest",
-    "security.protocol": "SSL",
-    "ssl.ca.location": base_path / "ca/ca-cert.pem",
-    "ssl.certificate.location": base_path / "sappan/sappan-cert.pem",
-    "ssl.key.location": base_path / "sappan/sappan-key.pem"
-}
-
-SCHEMA_REGISTRY_CONFIG = {
-    "url": "https://kafka-registry.cyberseas-io.eu:8085",
-    "ssl.ca.location": base_path / "ca/ca-cert.pem",
-    "ssl.certificate.location": base_path / "sappan/sappan-cert.pem",
-    "ssl.key.location": base_path / "sappan/sappan-key-plain.pem"
-}
-
 class KafkaInterface:
     def __init__(self, user):
         if user.is_anonymous:
