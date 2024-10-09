@@ -1,0 +1,16 @@
+{
+    "extensions": [
+        {
+            "name": "Flex Diagrams",
+            "extension": "FlexDiagrams",
+			"giturl": "https://gerrit.wikimedia.org/r/mediawiki/extensions/FlexDiagrams.git",
+			"url": "https://www.mediawiki.org/wiki/Extension:Flex_Diagrams"
+        },
+        {
+            "name": "Page Forms",
+            "extension": "PageForms",
+            "url": "https://www.mediawiki.org/wiki/Extension:Page_Forms",
+            "composer": "\"mediawiki/page-forms\": \"^5.8\""
+        }
+    ]
+}
