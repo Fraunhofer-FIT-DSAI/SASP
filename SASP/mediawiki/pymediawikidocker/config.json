@@ -1,0 +1,20 @@
+{
+    "version_list": "1.41.1",
+    "smw_version": "4.1.3",
+    "sql_base_port": 10307,
+    "base_port": 8481,
+    "host": "localhost",
+    "container_name": "smw41",
+    "mariaDBVersion": "10.11",
+    "docker_path": "./dockerbuild",
+    "user": "Sysop",
+    "password": "Available_Panning_Brussels5",
+    "bot_password": "v9ld55r7isk7eh8i6pkr3deif0pcd8iq",
+    "bot_id": "SysBot",
+    "mysqlPassword": "Flounder_Flail_Bulginess4",
+    "prot" : "http",
+    "logo": "$wgResourceBasePath/resources/assets/logo.png",
+    "forceRebuild": true,
+    "extensionList": ["Page Forms", "Admin Links", "Header Tabs", "SyntaxHighlight", "Variables", "Flex Diagrams"],
+    "extensionJson": "extensionList.json"
+}

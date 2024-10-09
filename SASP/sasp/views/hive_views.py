@@ -15,7 +15,6 @@ from ..forms import (
     HiveDashboardForm,
 )
 from ..external_apis.hive_cortex_api import CortexApi, HiveAPI
-from ..automation_component.hive_playbook_instances import spawn_workflow
 
 import sasp.views as views
 from sasp.knowledge import KnowledgeBase as kb
@@ -144,18 +143,6 @@ def TheHiveRunPlaybook(request, playbook_id, case_id):
     # Disabled for this version
     messages.error(request, _("TheHive Dashboard is currently disabled"))
     return HttpResponseRedirect(reverse("index"))
-
-    db_object = spawn_workflow(
-        playbook=Playbook.objects.get(pk=playbook_id), case_id=case_id
-    )
-    return HttpResponseRedirect(
-        reverse(
-            "thehive-run-details",
-            kwargs={
-                "pk": db_object.pk,
-            },
-        )
-    )
 
 
 @keycloak_login_required

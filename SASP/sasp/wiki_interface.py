@@ -1,10 +1,8 @@
 import sasp.knowledge as knowledge
 from .utils import wiki_name
 from mwclient import Site
-from dotenv import load_dotenv
 import sasp.models
 from sasp.models.auth import UserProfile
-from os import getenv
 
 import logging
 import requests
@@ -48,11 +46,6 @@ class Wiki:
         except requests.exceptions.ConnectionError:
             self.logger.error("Could not connect to wiki, check your settings")
             exit(1)
-
-        load_dotenv(self.kb.dot_env_path)
-        # path to graphviz (if graphviz is already in the path,
-        # you can ignore this variable)
-        os.environ["PATH"] += getenv("GRAPHVIZ_PATH")
 
     """Read-only functions for the wiki"""
 
