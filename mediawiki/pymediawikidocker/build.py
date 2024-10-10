@@ -188,10 +188,6 @@ info(
 compose["services"]["mw"]["restart"] = "unless-stopped"
 compose["services"]["db"]["restart"] = "unless-stopped"
 
-info(
-    "Removing version from compose file (deprecated)"
-)
-del compose["version"]
 
 info(
     "Adding mount './LocalSettings.php:/var/www/html/LocalSettings.php' to docker-compose.yml"
@@ -283,7 +279,7 @@ if bot_id and bot_password:
         )
         warning(" Disregard the above")
         success(
-            f"Successfully created bot. Login using user '{build_config['user']}' and password '{bot_id}@{bot_password}'"
+            f"Successfully created bot. You can reset the password using '{build_config['host']}:{build_config['base_port']}/index.php/Special:BotPasswords'"
         )
     except Exception as e:
         error(f"Error while creating bot. {e}",bold=True)
@@ -292,9 +288,9 @@ if bot_id and bot_password:
 try:
     if bot_id and bot_password:
         pw = f"{bot_id}@{bot_password}"
-        info(f"Logging in as bot '{build_config['user']}' with password '{pw}'")
-        wiki.login(build_config["user"], pw)
-        success(f"Successfully logged in as bot '{build_config['user']}'")
+        info(f"Logging in as admin '{build_config['user']}' with password '{build_config['password']}'")
+        wiki.login(build_config["user"], build_config['password'])
+        success(f"Successfully logged in as admin '{build_config['user']}'")
 except Exception as e:
     error(f"Error. Could not login to the wiki. {e}",bold=True)
     exit(1)
