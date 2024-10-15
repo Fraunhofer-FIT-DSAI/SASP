@@ -1,8 +1,0 @@
-<li class="nav-item dropdown">
-  <a class="nav-link dropdown-toggle ms-2 {% if dropdown.disabled %}disabled{% endif %}" data-bs-toggle="dropdown" href="#{{dropdown.tag}}" aria-expanded="false">{{dropdown.header.text}}</a>
-  <ul class="dropdown-menu">
-    {% for entry in dropdown.links %}
-    <li><a class="dropdown-item" href="{{ entry.href|default:'#' }}">{{ entry.text }}</a></li>
-    {% endfor %}
-  </ul>
-</li>
