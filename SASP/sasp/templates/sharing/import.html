@@ -1,0 +1,50 @@
+{% extends 'base_generic.html' %}
+{% load django_bootstrap5 %}
+
+{% block content %}
+  <div class="col-12">
+    <h1>{{ title }}</h1>
+    {% if platform_disconnected %}
+    <div class="alert alert-danger" role="alert">
+      <strong>Warning!</strong> No connection to {{platform_label}}. Please check your connection settings.
+    </div>
+    {% else %}
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      {% if form.search_field %}
+        {% bootstrap_field form.search_field %}
+        {% if not search_button_disabled %}
+        <button type="submit" name="search" class="btn btn-primary mb-3">{{stage_labels.search|default:'Search'}}</button>
+        {% endif %}
+      {% endif %}
+      {% if form.playbook %}
+        {% if playbook_field_type == "field" %}
+          {% bootstrap_field form.playbook %}
+        {% else %}
+          {% if form.playbook|length == 0 %}
+            <div class="alert alert-warning" role="alert">
+              No results found.
+            </div>
+          {% endif %}
+          {% bootstrap_field form.playbook %}
+        {% endif %}
+        {% if not select_button_disabled %}
+          <button type="submit" name="select" class="btn btn-primary mb-3">{{stage_labels.select|default:'Select'}}</button>
+        {% endif %}
+      {% endif %}
+      {% if form.playbook_name %}
+        {% bootstrap_field form.playbook_name %}
+      {% endif %}
+      {% if form.playbook_json %}
+        {% bootstrap_field form.playbook_json %}
+        {% if not submit_button_disabled %}
+        <button type="submit" name="submit" class="btn btn-primary mb-3">{{stage_labels.submit|default:'Submit'}}</button>
+        {% endif %}
+      {% endif %}
+
+
+      
+    </form>
+    {% endif %}
+  </div>
+{% endblock %}

@@ -1,0 +1,24 @@
+{% extends 'base_generic.html' %}
+{% load django_bootstrap5 %}
+
+{% block extra_head %}
+    {% include "js/select2.html" %}
+{% endblock extra_head %}
+
+{% block content %}
+  <div class="col-12">
+    <h1>{{ title }}</h1>
+    {% if platform_disconnected %}
+    <div class="alert alert-danger" role="alert">
+      <strong>Warning!</strong> No connection to {{platform_label}}. Please check your connection settings.
+    </div>
+    {% else %}
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {% bootstrap_form form %}
+        
+        <button type="submit" name="publish" class="btn btn-primary">{{buttons.submit.label|default:'Publish'}}</button>
+    </form>
+    {% endif %}
+  </div>
+{% endblock %}

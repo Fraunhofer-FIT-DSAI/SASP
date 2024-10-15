@@ -1,0 +1,118 @@
+{% extends "playbook_base.html" %}
+
+
+{% block content %}
+  <h1>{{name}}</h1>
+  {% load static %}
+  <script src="{% static 'js/libraries/bpmn-navigated-viewer.development.js' %}" type="application/javascript"></script>
+
+  
+  <!-- required viewer styles -->
+  <link rel="stylesheet" href="{% static 'css/libraries/bpmn-js.css' %}">
+  <div class="row">
+    <div class="col-sm-10">
+      <div class="bpmn-container" id="canvas"></div>
+    </div>
+  </div>
+  
+  <script type="application/javascript">
+
+    var diagram = '{{bpmn|escapejs}}';
+
+    // viewer instance
+    var bpmnViewer = new BpmnJS({
+      container: '#canvas',
+      width: '100%',
+      height: '80%',
+      keyboard: {
+        bindTo: window
+      }
+    });
+
+
+    /**
+     * Open diagram in our viewer instance.
+     *
+     * @param {String} bpmnXML diagram to display
+     */
+    async function openDiagram(bpmnXML) {
+
+      // import diagram
+      try {
+
+        await bpmnViewer.importXML(bpmnXML);
+
+        // access viewer components
+        var canvas = bpmnViewer.get('canvas');
+        var overlays = bpmnViewer.get('overlays');
+        var hrefDict = JSON.parse('{{href_dict|escapejs}}');
+
+        bpmnViewer.on('element.click', function(event) {
+          let element = event.element;
+          let businessObject = element.businessObject;
+          let id = businessObject.id;
+          let name = businessObject.name || businessObject.id;
+          let type = businessObject.$type;
+          if (hrefDict[id]) {
+            window.location.href = hrefDict[id];
+          }
+        });
+        bpmnViewer.on('element.auxclick', function(event) {
+          // Doesn't seemt to work, not sure why
+          console.log(event.originalEvent.button);
+          if (event.originalEvent.button === 1) {
+            let element = event.element;
+            let businessObject = element.businessObject;
+            let id = businessObject.id;
+            let name = businessObject.name || businessObject.id;
+            let type = businessObject.$type;
+            if (hrefDict[id]) {
+              window.open(hrefDict[id], '_blank');
+            }
+          }
+        });
+        var popup = document.createElement('div');
+        bpmnViewer.on('element.out', function(event) {
+          document.body.style.cursor = 'default';
+        });
+        bpmnViewer.on('element.hover', function(event) {
+          let element = event.element;
+          let businessObject = element.businessObject;
+          let id = businessObject.id;
+          let name = businessObject.name || businessObject.id;
+          let type = businessObject.$type;
+          if (hrefDict[id]) {
+            document.body.style.cursor = 'pointer';
+            popup.style.display = 'block';
+            popup.style.position = 'absolute';
+            popup.style.top = event.originalEvent.clientY + 10 + 'px';
+            popup.style.left = event.originalEvent.clientX + 10 +'px';
+            popup.style.backgroundColor = 'white';
+            popup.style.border = '1px solid black';
+            popup.style.padding = '5px';
+            popup.style.zIndex = '1000';
+            popup.innerHTML = name;
+            document.body.appendChild(popup);
+          }
+          else {
+            popup.style.display = 'none';
+          }
+        });
+
+        // zoom to fit full viewport
+        canvas.zoom('fit-viewport');
+      } catch (err) {
+
+        console.error('could not import BPMN 2.0 diagram', err);
+      }
+    }
+
+
+    // load external diagram file via AJAX and open it
+    openDiagram(diagram);
+  </script>
+
+{% endblock %}
+
+{% block modals %}
+{% endblock modals %}

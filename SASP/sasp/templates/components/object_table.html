@@ -1,0 +1,14 @@
+<table class="playbook-object-view table table-striped">
+    {% for field in fields %}
+      <tr>
+        <th>{{field.label}}</td>
+        <td>
+          {% include "components/object_table_entry.html" with entry=field %}
+        </td>
+      </tr>
+    {% empty %}
+      <div class="alert alert-warning" role="alert">
+        There are no records to display at this time.
+      </div>
+    {% endfor %}
+  </table>

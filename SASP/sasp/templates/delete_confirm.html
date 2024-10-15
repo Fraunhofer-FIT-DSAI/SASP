@@ -1,0 +1,27 @@
+{% extends "base_generic.html" %}
+
+{% block title %}
+<title>{{title}}</title>
+{% endblock %}
+
+{% block content %}
+<h1>{{title}}</h1>
+<div class="card px-0">
+    <div class="card-header">
+        Are you sure you want to delete?
+    </div>
+    <div class="card-body">
+        <h5 class="card-title">You are about to delete:</h5>
+        <p class="card-text">{{name_deleted_object}}</p>
+        {% if list_derived_objects %}
+        <h5 class="card-title">This will also delete the following objects:</h5>
+        <ul>
+            {% for object in list_derived_objects %}
+            <li>{{object}}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        <a href="{{ confirm_url }}" class="btn btn-danger">Delete</a>
+    </div>
+</div>
+{% endblock content %}

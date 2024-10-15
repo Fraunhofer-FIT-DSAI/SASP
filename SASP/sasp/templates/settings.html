@@ -1,0 +1,21 @@
+{% extends "settings_base.html" %}
+
+{% block extra_head %}
+{% endblock %}
+
+
+{% block title %}
+<title>SASP Capturing Tool</title>
+{% endblock %}
+
+{% block base_content %}
+<table class="table table-striped">
+  <tbody>
+  {% for label,value in user_attributes.items %}    
+    <tr>
+      <th scope="row">{{label}}</th>
+      <td>{{ value }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+{% endblock %}

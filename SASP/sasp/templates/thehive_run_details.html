@@ -1,0 +1,98 @@
+{% extends "base_generic.html" %}
+
+{% block title %}
+<title>TheHive Dashboard</title>
+{% endblock %}
+
+{% block extended_actions %}
+{% for delButton,values in js_context.confirm_delete.items %}
+  <li class="nav-item"><a class="btn btn-sm btn-outline-danger me-1" id="{{delButton}}" href="{{values.url}}">Delete</a></li>
+{% endfor %}
+
+{% endblock %}
+
+{% block content %}
+    {% block heading %}
+    <h1>{{title}}</h1>
+    {% endblock %}
+    <h2>Status: {{ playbook_status }}</h2>
+
+    {% if active_steps %}
+        <h2>Active Steps</h2>
+            <table class="table table-sm">
+            {% for step in active_steps %}
+                {% for value in step %}
+                    {% if forloop.first %}
+                    <thead>
+                        <tr>
+                            <th colspan="{{ step|length }}">{{ value }}</th>
+                        </tr>
+                    </thead>
+                    {% else %}
+                    <tr>
+                        <th>{{ value.0 }}</th>
+                        {% if value|length > 3 and value.2 == "json" %}
+                          <td>
+                              <div class="card card-body">
+                                  <pre id="{{value.3}}">{{ value.1|safe }}</pre>
+                              </div>
+                          </td>
+                        {% else %}
+                          <td>{{ value.1 }}</td>
+                        {% endif %}
+                    </tr>
+                    {% endif %}
+                {% endfor %}
+            {% endfor %}
+            </table>
+    {% endif %}
+
+    {% if confirmation_requests %}
+        <h2>Confirmation Requests</h2>
+        {% for conf_req in confirmation_requests.values %}
+            <div class="card card-body">
+                <h3>{{ conf_req.title }}</h3>
+                <table class="table table-sm">
+                    <tr>
+                        <th>Message</th>
+                        <td>{{ conf_req.message }}</td>
+                    </tr>
+                    <tr>
+                        <th>Data</th>
+                        <td>
+                            <div class="card card-body">
+                                <pre id="{{ conf_req.data_field_id }}">{{ conf_req.data|safe }}</pre>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Timeout</th>
+                        <td>{{ conf_req.timeout }}</td>
+                    </tr>
+                    <tr>
+                        <th>Timestamp</th>
+                        <td>{{ conf_req.timestamp }}</td>
+                    </tr>
+                </table>
+                {% if conf_req.approved %}
+                    <a class="btn btn-sm btn-outline-success me-1 disabled">Confirmed</a>
+                {% else %}
+                    {% if conf_req.abort %}
+                        <a class="btn btn-sm btn-outline-danger me-1 disabled">Aborted</a>
+                    {% else %}
+                        <a class="btn btn-sm btn-outline-info me-1" href="{{ conf_req.confirm_url }}">Confirm</a>
+                    {% endif %}
+                {% endif %}
+                {% comment %} <a class="btn btn-sm btn-outline-danger me-1" href="{{ conf_req.cancel_url }}">Cancel</a> {% endcomment %}
+            </div>    
+        {% endfor %}
+    {% endif %}
+
+    <!-- json -->
+    <p>
+        <div class="card card-body">
+            <pre id="run-details">{{run_details}}</pre>
+        </div>
+    </p>
+
+{% endblock %}
