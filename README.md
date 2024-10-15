@@ -43,6 +43,9 @@ You'll find the projects configuration files under `SASP/config`.
 The project uses a `config.ini` and `keys.ini` to store configuration and sensitive information. 
 In the `SASP/config/` folder, there is a `config_example.ini` and `keys_example.ini` file that can be used as a template for the actual `config.ini` and `keys.ini` files. Below is an overview of the variables used in the project and installation.
 
+### Keycloak
+The program was developed to use SSO solution Keycloak for user management. For demonstration purposes this is bypassed in this release, but can be enabled by setting `BYPASS_KEYCLOAK=False` in `SASP/sasp/auth/keycloak_integration.py`.
+
 #### Overview of Configuration Variables
 ##### Config.ini
 | Section | Variable | Description | Optional | Notes |
@@ -70,7 +73,7 @@ In the `SASP/config/` folder, there is a `config_example.ini` and `keys_example.
 | --- | --- | --- | --- | --- |
 | __Wiki__ | `bot_password` | Password of the mediawiki bot user | No | - |
 | __MISP__ | `key` | API key for the MISP instance | Yes | - |
-| __Kafka__ | `ssl_key_pwd` | Password for the Kafka client key | No | - |
+| __Kafka__ | `ssl_key_pwd` | Password for the Kafka client key | Yes | - |
 | __Keycloak__ | `client_secret` | Secret token for connected Keycloak instance | No | - |
 
 ### Automatic Setup

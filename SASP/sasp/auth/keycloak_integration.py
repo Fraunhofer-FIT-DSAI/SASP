@@ -17,8 +17,8 @@ from django.contrib import messages
 from sasp.models.auth import UserProfile, LoginInfo
 from keycloak import KeycloakOpenID
 
-# Should not be used in production, but can be useful for development
-BYPASS_KEYCLOAK = False
+# Enables use without a Keycloak instance, but is not recommended
+BYPASS_KEYCLOAK = True
 
 def keycloak_openid():
     """Wrapper around the KeycloakOpenID object"""
@@ -41,12 +41,9 @@ def test_func(user):
     # If user is anonymous, check default user
     # TAG:MULTIPLE_USERS, TAG:KEYCLOAK
     if not user.is_authenticated:
-        # user = UserProfile.objects.get(user__username='default')
         return False
     else:
         user = user.profile
-    if BYPASS_KEYCLOAK:
-        return True
     token = user.sso_token
     if not token:
         return False
@@ -57,7 +54,7 @@ def test_func(user):
             user.sso_token = token
             user.sso_token_expires = timezone.now() + timedelta(seconds=token['expires_in'])
             user.save()
-    except Exception as e:
+    except Exception:
         return False
     # TODO: Add basic permission check at this point. I.e. user has access to resource SASP, more fine grained
     # permissions if and when we need them should use the django permissions system (probably expanded for keycloak)
@@ -76,37 +73,40 @@ def keycloak_user_passes_test(
     def decorator(view_func):
         @wraps(view_func)
         def _wrapped_view(request, *args, **kwargs):
-            if test_func(request.user):
-                if BYPASS_KEYCLOAK and request.user.is_anonymous:
+            if BYPASS_KEYCLOAK:
+                if request.user.is_anonymous:
                     user = UserProfile.objects.get(user__username='default')
                     if not request.session.get('keycloak_bypass_warning', False):
                         messages.warning(
                             request, 
-                            'Bypassing Keycloak. This was created as a temporary measure while we wait for "https://sso.cyberseas-io.eu/"'
-                            'credentials in February 2024. Please do not rely on this for production.'
+                            'Bypassing Keycloak. This enables use without a Keycloak instance, but is not recommended.'
                             )
                         request.session['keycloak_bypass_warning'] = True
                     login(request, user.user)
                 return view_func(request, *args, **kwargs)
-            path = request.build_absolute_uri()
-            resolved_login_url = resolve_url(login_url or keycloak_openid().auth_url(redirect_uri='', scope='openid profile email'))
-            # If the login url is the same scheme and net location then just
-            # use the path as the "next" url.
-            login_scheme, login_netloc = urlparse(resolved_login_url)[:2]
-            current_scheme, current_netloc = urlparse(path)[:2]
-            if (not login_scheme or login_scheme == current_scheme) and (
-                not login_netloc or login_netloc == current_netloc
-            ):
-                path = request.get_full_path()
-            
-            # TAG:KEYCLOAK
-            request.session['redirect_uri'] = str(path)
-            path = request.build_absolute_uri(reverse('keycloak-login-landing-page'))
-            print('DEBUG', 'decorator', path)
-            print('DEBUG', 'decorator', redirect_field_name)
-            from django.contrib.auth.views import redirect_to_login
-
-            return redirect_to_login(path, resolved_login_url, redirect_field_name)
+            elif not test_func(request.user):
+                path = request.build_absolute_uri()
+                resolved_login_url = resolve_url(login_url or keycloak_openid().auth_url(redirect_uri='', scope='openid profile email') or settings.LOGIN_URL)
+                # If the login url is the same scheme and net location then use the
+                # path as the "next" url.
+                login_scheme, login_netloc = urlparse(resolved_login_url)[:2]
+                current_scheme, current_netloc = urlparse(path)[:2]
+                if (not login_scheme or login_scheme == current_scheme) and (
+                    not login_netloc or login_netloc == current_netloc
+                ):
+                    path = request.get_full_path()
+                
+                # TAG:KEYCLOAK
+                request.session['redirect_uri'] = str(path)
+                path = request.build_absolute_uri(reverse('keycloak-login-landing-page'))
+                from django.contrib.auth.views import redirect_to_login
+                return redirect_to_login(
+                    path,
+                    resolved_login_url,
+                    redirect_field_name,
+                )
+            else:
+                return view_func(request, *args, **kwargs)
 
         return _wrapped_view
 
@@ -170,8 +170,7 @@ class KeycloakLoginRequiredMixin(AccessMixin):
                 if not request.session.get('keycloak_bypass_warning', False):
                     messages.warning(
                         request, 
-                        'Bypassing Keycloak. This was created as a temporary measure while we wait for "https://sso.cyberseas-io.eu/"'
-                        'credentials in February 2024. Please do not rely on this for production.'
+                        'Bypassing Keycloak. This enables use without a Keycloak instance, but is not recommended.'
                         )
                     request.session['keycloak_bypass_warning'] = True
                 login(request, user.user)
