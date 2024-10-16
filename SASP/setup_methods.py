@@ -7,6 +7,16 @@ import configparser
 from pathlib import Path
 from rich import print as rprint
 
+setup_complete_file = Path(__file__).parent / '..' / 'readme-images' / 'install-complete.txt'
+
+def setup_complete():
+    if setup_complete_file.exists():
+        with open(setup_complete_file, 'r') as f:
+            for line in f.readlines():
+                rprint("[bold green]" + line + "[/]")
+    else:
+        rprint("[bold green]Setup complete![/]")
+
 def python_status(python_executable: str):
     try:
         process = subprocess.run([python_executable, "--version"], check=True, capture_output=True)

@@ -6,7 +6,7 @@
 from setup_methods import (
     Path, rprint, check_file_exists, abort_script, check_config, check_container_running,
     warning, manage_setup_database, manage_setup_user, update_forms, run_job_queue, import_playbook,
-    python_status
+    python_status, setup_complete
 )
 ## Configuration User
 
@@ -91,4 +91,5 @@ if not SKIP_PLAYBOOK_IMPORT:
     rprint("[blue]Step 5: Importing example playbooks[/]")
     for example_playbook in example_playbooks:
         import_playbook(django_manage, python_executable, example_playbook)
-rprint("[bold green]Setup complete![/]")
+        
+setup_complete()
