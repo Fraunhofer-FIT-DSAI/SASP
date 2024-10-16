@@ -39,6 +39,7 @@
     "step--5195d65e-dd06-48f3-a430-ae90ef10dd92": {
       "type": "single",
       "name": "single - Manual response required",
+      "on_completion": "step--1d53dca2-e5a7-417d-8c26-91bc4d94c5dd",
       "commands": [
         {
           "type": "manual",
