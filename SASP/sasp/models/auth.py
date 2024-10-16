@@ -11,7 +11,7 @@ class UserProfile(models.Model):
     display_name = models.CharField(max_length=255, null=True, blank=True)
     sso_token = models.JSONField(null=True, blank=True)
     sso_token_expires = models.DateTimeField(null=True, blank=True)
-    sso_user_info = models.JSONField(null=True, blank=True)
+    sso_user_info = models.JSONField(blank=True, default=dict)
 
     def __str__(self):
         return f"{self.user.username} ({self.display_name})"

@@ -187,8 +187,7 @@ class KeycloakLoginRequiredMixin(AccessMixin):
                 if not request.session.get('keycloak_bypass_warning', False):
                     messages.warning(
                         request, 
-                        'Bypassing Keycloak. This was created as a temporary measure while we wait for "https://sso.cyberseas-io.eu/"'
-                        'credentials in February 2024. Please do not rely on this for production.'
+                        'Bypassing Keycloak. This enables use without a Keycloak instance, but is not recommended.'
                         )
                     request.session['keycloak_bypass_warning'] = True
                 login(request, user.user)
