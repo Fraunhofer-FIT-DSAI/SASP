@@ -34,6 +34,8 @@ You can use the provided script in `mediawiki/pymediawikidocker/build.py` to aut
 
 Otherwise you need to download and install a SMW instance. For that, you need to have [Docker](https://www.docker.com/), and then install the [SMW](https://github.com/WolfgangFahl/pymediawikidocker?tab=readme-ov-file/).
 
+Once Mediawiki is set up obtain a bot login for the tool. If you used our script a bot has already been created, you just need to reset the password once (`{mediawiki_url}/index.php/Special:BotPasswords`). Add the login to the config files as described in the Configuration section.
+
 ### Install SASP
 In order for SASP to work, the mediawiki setup must have been fully completed and the Mediawiki must be active. After the setup procedure is done, make sure the docker containers are running and then proceed with the installation of the tool. The tool is being developed using Python 3.10.13 and Django 5.1 and should be compatible with Python 3.10 and above. The tool is currently being developed on Windows 10, but should be compatible with Linux and MacOS as well.
 
@@ -53,7 +55,7 @@ The program was developed to use SSO solution Keycloak for user management. For 
 | __Wiki__ | `url` | The base url of the connected Mediawiki instance | No | - |
 | __Wiki__ | `api_path` | Path to the mediawiki api | No | - |
 | __Wiki__ | `user_path` | Path to the mediawiki user pages | No | - |
-| __Wiki__ | `bot_user` | Username of the mediawiki system user | No | - |
+| __Wiki__ | `bot_user` | Username of the mediawiki system user | No | The username of the wiki user who created the bot |
 | __MISP__ | `url` | URL to the MISP instance | Yes | Used for sharing playbooks via MISP, not essential for the tool to work if not used |
 | __Keycloak__ | `url` | URL to the Keycloak instance for SSO | No | - |
 | __Keycloak__ | `client` | Client ID for the Keycloak instance | No | - |
@@ -71,7 +73,7 @@ The program was developed to use SSO solution Keycloak for user management. For 
   ##### Keys.ini
 | Section | Variable | Description | Optional | Notes |
 | --- | --- | --- | --- | --- |
-| __Wiki__ | `bot_password` | Password of the mediawiki bot user | No | - |
+| __Wiki__ | `bot_password` | Password of the mediawiki bot user | No | Should be of the form `bot_name@bot_password` |
 | __MISP__ | `key` | API key for the MISP instance | Yes | - |
 | __Kafka__ | `ssl_key_pwd` | Password for the Kafka client key | Yes | - |
 | __Keycloak__ | `client_secret` | Secret token for connected Keycloak instance | No | - |
