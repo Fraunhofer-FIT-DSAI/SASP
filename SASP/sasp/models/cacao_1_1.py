@@ -2666,7 +2666,10 @@ class CACAO_1_1_PlaybookObject(Playbook_Object):
     
     def get_form_fields(self):
         form_fields = dict()
-        playbook_objects = [x.resolve_subclass() for x in self.playbook.playbook_objects.all()]
+        if self.playbook.pk:
+            playbook_objects = [x.resolve_subclass() for x in self.playbook.playbook_objects.all()]
+        else:
+            playbook_objects = []
         for field in self.object_fields.values():
             if field.hidden:
                 continue

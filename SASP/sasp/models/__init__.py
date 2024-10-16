@@ -358,8 +358,10 @@ class Playbook(models.Model):
             value = self.name
         elif self.wiki_page_name:
             value = self.wiki_page_name
-        else:
+        elif self.pk:
             value = _("Unnamed playbook %(pk)s" % {"pk":self.pk})
+        else:
+            value = _("Unnamed playbook")
         
         if self.archived:
             value += _(" (Archived: %(archive_tag)s)" % {"archive_tag":self.archive_tag})

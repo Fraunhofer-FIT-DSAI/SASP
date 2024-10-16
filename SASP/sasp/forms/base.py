@@ -78,7 +78,8 @@ class PlaybookObjectForm(forms.Form):
             self.fields['system_parent_object_field'].disabled = True
         else:
             self.fields['system_wiki_page_name'].validators.append(self.validate_wiki_page_name_unique)
-            self.fields['system_parent_object'].queryset = Playbook_Object.objects.filter(playbook=self.playbook)
+            if not self.is_playbook:
+                self.fields['system_parent_object'].queryset = Playbook_Object.objects.filter(playbook=self.playbook)
         
         if self.is_playbook:
             self.fields['system_parent_object'].disabled = True

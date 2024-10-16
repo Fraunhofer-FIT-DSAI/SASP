@@ -51,6 +51,8 @@ class TestViews(TestCase):
             ("Playbook Detail", reverse("playbook-detail", args=[self.test_playbook.pk]), 200),
             ("Playbook Edit", reverse("playbook-edit", args=[self.test_playbook.pk]), 200),
             ("Playbook BPMN", reverse("playbook-bpmn", args=[self.test_playbook.pk]), 200),
+            ("New Playbook", reverse("playbook-create", args=[sasp.models.cacao_1_1.CACAO_1_1_Playbook.slug]), 200),
+            ("New Playbook Object", reverse("playbook_object-create", args=[self.test_playbook.pk,sasp.models.cacao_1_1.CACAO_1_1_StartStep.slug]), 200),
             ("Sharing Json Validator", reverse("sharing-json-validator"), 200),
             ("Sharing Import Json CACAO 1-1", reverse("sharing-import-json-cacao-1-1"), 200),
             ("Sharing Export Json CACAO 1-1", reverse("sharing-export-json-cacao-1-1"), 200),
