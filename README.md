@@ -13,8 +13,8 @@
 This README document is designed to help the viewer understand the structure of the overall repository. The tool contains files related to the playbook management tool used to input/edit/query the mediawiki with new information. The `readme-images` folder simply contains any image files that are used in the many readme files of the project. 
 The playbook management tool is designed to provide a wide variety of functionalities around cyber security playbooks. Such as playbook creation, management, limited automatic execution and easy sharing. However, the open-source version does not contain all the functionalities.
 
-## DISCLAIMER
-This is a proof-of-concept prototype and is not intended for production use. The code has not undergone thorough review for security vulnerabilities. For more information on commercial use and advanced features, please contact the DPS group at Fraunhofer FIT: https://www.fit.fraunhofer.de/en/business-areas/data-science-and-artificial-intelligence/data-protection-and-sovereignty.html
+### DISCLAIMER
+This is a proof-of-concept prototype and is not suitable for production use. The code has not been thoroughly reviewed for security vulnerabilities. For further information and support regarding production use, commercial applications, and advanced features, please contact the DPS group at Fraunhofer FIT: https://www.fit.fraunhofer.de/en/business-areas/data-science-and-artificial-intelligence/data-protection-and-sovereignty.html
 
 ## Dependencies
 As a scientific library in the Python ecosystem, we rely on external libraries to offer our features. In the `/third_party` folder, we list all the licenses of our direct dependencies. Please check the `/third_party/licenses.json` file to get a full list of dependencies and the corresponding licenses.
