@@ -12,8 +12,8 @@ from setup_methods import (
 
 # Name of container the semantic mediawiki is running in. This is used to run the job queue after the setup
 # and to check if the container is running.
-# It is not essential and can be set to None, but this might lead to unexpected behavior.
-smw_cont = "smw42-mw"
+# It is not essential and can be set to None, but this might lead to unexpected behavior. You can put your smw instance name here.
+smw_cont = "smw41-mw"
 
 # Location of the python executable. If you are using a virtual environment, this should point to the python
 # executable in the virtual environment.
