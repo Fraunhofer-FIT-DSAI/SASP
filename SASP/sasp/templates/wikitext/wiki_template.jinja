@@ -1,0 +1,16 @@
+<noinclude>
+{{ '{{' }}#template_params:{% for prop in props %}{{ prop.name }} (label={{ prop.label }};{% if prop.list %}list;{% endif %}property={{ prop.prop }}){% if not loop.last %}|{% endif %}{% endfor %}{{ '}}' }}
+</noinclude><includeonly>{| class="wikitable"
+{% for prop in props %}
+! {{ prop.label }}
+{% if prop.list %}
+| {{ '{{' }}#arraymap:{{ '{{{' }}{{ prop.name }}|{{ '}}}' }}|,|x|[[{{ prop.prop }}::x]]{{ '}}' }}
+{% else %}
+| [[{{ prop.prop }}::{{ '{{{' }}{{ prop.name }}|{{ '}}}' }}]]
+{% endif %}
+{% if not loop.last %}|-{% endif %}
+
+{% endfor %}
+|}
+[[Category:{{ form_name }}]]
+</includeonly>

@@ -1,0 +1,102 @@
+{
+    "confluent-kafka": {
+        "license": "Apache 2.0",
+        "version": "2.4.0",
+        "url": "https://pypi.org/project/confluent-kafka/"
+    },
+    "Django": {
+        "license": "BSD-3-Clause",
+        "version": "4.1",
+        "url": "https://pypi.org/project/Django/"
+    },
+    "django-bootstrap5": {
+        "license": "BSD-3-Clause",
+        "version": "23.4",
+        "url": "https://pypi.org/project/django-bootstrap5/"
+    },
+    "djangorestframework": {
+        "license": "BSD",
+        "version": "3.14.0",
+        "url": "https://pypi.org/project/djangorestframework/"
+    },
+    "Jinja2": {
+        "license": "BSD-3-Clause",
+        "version": "3.1.2",
+        "url": "https://pypi.org/project/Jinja2/"
+    },
+    "jsonschema": {
+        "license": "MIT",
+        "version": "4.22.0",
+        "url": "https://pypi.org/project/jsonschema/"
+    },
+    "mwclient": {
+        "license": "MIT",
+        "version": "0.10.1",
+        "url": "https://pypi.org/project/mwclient/"
+    },
+    "python-keycloak": {
+        "license": "MIT",
+        "version": "3.7.0",
+        "url": "https://pypi.org/project/python-keycloak/"
+    },
+    "pymediawikidocker": {
+        "license": "Apache-2.0",
+        "version": "0.12.1",
+        "url": "https://pypi.org/project/pymediawikidocker/"
+    },
+    "pymisp": {
+        "license": "BSD-2-Clause",
+        "version": "2.4.190",
+        "url": "https://pypi.org/project/pymisp/"
+    },
+    "python-dotenv": {
+        "license": "BSD-3-Clause",
+        "version": "1.0.1",
+        "url": "https://pypi.org/project/python-dotenv/"
+    },
+    "requests": {
+        "license": "Apache-2.0",
+        "version": "2.32.2",
+        "url": "https://pypi.org/project/requests/"
+    },
+    "rich": {
+        "license": "MIT",
+        "version": "13.7.1",
+        "url": "https://pypi.org/project/rich/"
+    },
+    "bootstrap": {
+        "license": "MIT",
+        "version": "5.3.0",
+        "url": "https://pypi.org/project/bootstrap/"
+    },
+    "webpack": {
+        "license": "MIT",
+        "version": "5.68.0",
+        "url": "https://webpack.js.org/license/"
+    },
+    "jquery": {
+        "license": "MIT",
+        "version": "3.6.0",
+        "url": "https://jquery.com/license/"
+    },
+    "react": {
+        "license": "MIT",
+        "version": "18.3.1",
+        "url": "https://reactjs.org/"
+    },
+    "select2": {
+        "license": "MIT",
+        "version": "4.1.0-rc.0",
+        "url": "https://select2.org/"
+    },
+    "select2-bootstrap-5-theme": {
+        "license": "MIT",
+        "version": "1.3.0",
+        "url": "https://github.com/apalfrey/select2-bootstrap-5-theme"
+    },
+    "cacao-roaster": {
+        "license": "Apache 2.0",
+        "version": "1.0.0",
+        "url": "https://github.com/opencybersecurityalliance/cacao-roaster"
+    }
+}

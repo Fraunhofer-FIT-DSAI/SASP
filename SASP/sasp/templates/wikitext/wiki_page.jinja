@@ -1,0 +1,22 @@
+{{ '{{' }}{{ form_name | replace('_', ' ') }}
+{% for field, value in content.items() %}
+|{{ field }}={{ value }}
+{% endfor %}
+{{ '}}' }}
+
+{% if tables %}
+{% for table in tables %}
+{| class="wikitable"
+{% if table.caption %}|+ {{ table.caption }}{% endif %}
+{% for header in table.headers %}! {{ header }}{% endfor %}
+|-
+{% for row in table.rows %}
+{% for cell in row %}| {{ cell }}{% endfor %}
+|-
+{% endfor %}
+|}
+{% endfor %}
+{% endif %}
+{% if bpmn %}
+{{ '{{' }}#display_diagram:BPMN:{{ bpmn | replace('_', ' ') }}{{ '}}' }}
+{% endif %}

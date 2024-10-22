@@ -8,21 +8,13 @@
   <h3 align="center">SASP Playbook Management Tool</h3>
 </div>
 
-<!-- TABLE OF CONTENTS -->
-## <summary>Table of Contents</summary>
-  <ol>
-    <li><a href="#about-the-project">About The Project</a></li>
-    <li><a href="#dependencies">Dependencies</a></li>
-    <li><a href="#installation">Installation</a></li>
-    <li><a href="#roadmap">Roadmap</a></li>
-    <li><a href="#technologies-used">Technologies Used</a></li>
-    <li><a href="#citation">Citation</a></li>
-  </ol>
-
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 This README document is designed to help the viewer understand the structure of the overall repository. The tool contains files related to the playbook management tool used to input/edit/query the mediawiki with new information. The `readme-images` folder simply contains any image files that are used in the many readme files of the project. 
 The playbook management tool is designed to provide a wide variety of functionalities around cyber security playbooks. Such as playbook creation, management, limited automatic execution and easy sharing. However, the open-source version does not contain all the functionalities.
+
+### DISCLAIMER
+This is a proof-of-concept prototype and is not suitable for production use. The code has not been thoroughly reviewed for security vulnerabilities. For further information and support regarding production use, commercial applications, and advanced features, please contact the DPS group at Fraunhofer FIT: https://www.fit.fraunhofer.de/en/business-areas/data-science-and-artificial-intelligence/data-protection-and-sovereignty.html
 
 ## Dependencies
 As a scientific library in the Python ecosystem, we rely on external libraries to offer our features. In the `/third_party` folder, we list all the licenses of our direct dependencies. Please check the `/third_party/licenses.json` file to get a full list of dependencies and the corresponding licenses.
@@ -37,92 +29,87 @@ python -m pip install -r requirements.txt
 ```
 
 ## Installation
+Make sure all requirements listed in `requirements.txt` are available in your environment.
+### Semantic Media Wiki
 This section concerns the creation of a Semantic Media Wiki instance which is a prerequisite for SASP. If you are updating from a previous version or connecting to an existing instance, you can skip this section.
 
-**This section is under development. We will provide an automated script to install a dockerized version of SMW.**
+You can use the provided script in `mediawiki/pymediawikidocker/build.py` to automatically download and setup a dockerized Mediawiki instance.
 
-You need to download and install SMW instance. For that, you need to have [Docker](https://www.docker.com/), and then install the [SMW](https://github.com/WolfgangFahl/pymediawikidocker?tab=readme-ov-file/).
+Otherwise you need to download and install a SMW instance. For that, you need to have [Docker](https://www.docker.com/), and then install the [SMW](https://github.com/WolfgangFahl/pymediawikidocker?tab=readme-ov-file/).
 
-### Run Program
-In order for SASP to work, the mediawiki setup must have been fully completed and the Mediawiki must be active. After the setup procedure is done, make sure the docker containers are running and then proceed with the installation of the tool. The tool is being developed using Python 3.10.13 and Django 4.1 and should be compatible with Python 3.10 and above. The tool is currently being developed on Windows 10, but should be compatible with Linux and MacOS as well.
+Once Mediawiki is set up obtain a bot login for the tool. If you used our script a bot has already been created, you just need to reset the password once (`{mediawiki_url}/index.php/Special:BotPasswords`). Add the login to the config files as described in the Configuration section.
 
-### Prerequisites and Installation
-
-Make sure all the dependencies listed above are installed. 
+### Install SASP
+In order for SASP to work, the mediawiki setup must have been fully completed and the Mediawiki must be active. After the setup procedure is done, make sure the docker containers are running and then proceed with the installation of the tool. The tool is being developed using Python 3.10.13 and Django 5.1 and should be compatible with Python 3.10 and above. The tool is currently being developed on Windows 10, but should be compatible with Linux and MacOS as well.
 
 ### Configuration
+You'll find the projects configuration files under `SASP/config`.
 
-The project uses a `config.env` and `keys.env` to store configuration and sensitive information. 
-In the `/config/` folder, there is a `config_example.env` and `keys_example.env` file that can be used as a template for the actual `config.env` and `keys.env` files and below is an overview of the environment variables used in the project and installation.
+The project uses a `config.ini` and `keys.ini` to store configuration and sensitive information. 
+In the `SASP/config/` folder, there is a `config_example.ini` and `keys_example.ini` file that can be used as a template for the actual `config.ini` and `keys.ini` files. Below is an overview of the variables used in the project and installation.
 
-#### Overview of Environment Variables
-##### Config.env
-| Variable | Description | Default Value | Optional | Notes |
+### Keycloak
+The program was developed to use SSO solution Keycloak for user management. For demonstration purposes this is bypassed in this release, but can be enabled by setting `BYPASS_KEYCLOAK=False` in `SASP/sasp/auth/keycloak_integration.py`.
+
+#### Overview of Configuration Variables
+##### Config.ini
+| Section | Variable | Description | Optional | Notes |
 | --- | --- | --- | --- | --- |
-| `GRAPHVIZ_PATH` | Path to the Graphviz installation used for BPMN generation | `` | Yes | - |
-| `PROTOCOL` | Protocol used to connect to the mediawiki | `http` | No | - |
-| `TOOL_HOST` | Hostname of the tool | `localhost` | No | - |
-| `WIKI_HOST` | Hostname of the mediawiki (if you access the tool and mediawiki from a different machine, this should be the IP of the machine running the mediawiki, not just localhost) | `localhost` | No | - |
-| `PORT` | Port used to connect to the mediawiki | `8081` | No | - |
-| `URL_BASE` | Base URL of the mediawiki | `${WIKI_HOST}:${PORT}` | No | - |
-| `API_PATH` | Path to the mediawiki api | `/w/` | No | - |
-| `USER_PATH` | Path to the mediawiki user pages | `/wiki/` | No | - |
-| `URL` | Full URL to the mediawiki | `${PROTOCOL}://${URL_BASE}` | No | - |
-| `API` | Full URL to the mediawiki api | `${URL}${API_PATH}` | No | - |
-| `USER_URL` | Full URL to the mediawiki user pages | `${URL}${USER_PATH}` | No | - |
-| `SYS_USERNAME` | Username of the mediawiki system user | `WikiSysop` | No | - |
-| `SYS_PASSSWORD` | Password of the mediawiki system user | `acomplicatedPassword1` | No | Will be moved to `keys.env` in the future |
-| `BOT_PASSWORD` | Password of the mediawiki bot user | `a@rkct3k9aqhhc1fhtq5j1vsql8kp5ec94` | No | Will be moved to `keys.env` in the future |
-| `MISP_URL` | URL to the MISP instance | `https://localhost` | Yes | Used for sharing playbooks with MISP, not essential for the tool to work if not used |
-| `HIVE_URL` | URL to the Hive instance | `http://localhost:9000` | Yes | Used for the automatic execution of playbooks |
-| `CORTEX_URL` | URL to the Cortex instance | `http://localhost:9001` | Yes | Used for the automatic execution of playbooks |
-| `KEYCLOAK_URL` | URL to the Keycloak for SSO | `http://localhost:8083` | Sometimes | A requirement for the project is to integrate with Keycloak for SSO, but until final details are worked out, this is bypassed |
-| `KEYCLOAK_CLIENT_ID` | Client ID for the Keycloak instance | `experiments` | Sometimes | See above |
-| `KEYCLOAK_REALM` | Realm for the Keycloak instance | `TestRealm` | Sometimes | See above |
-| `KAFKA_CLIENT_ID` | Client ID for the Kafka instance | `python-kafka-client` | No | Used for sharing via Kafka, not yet implemented |
-| `KAFKA_BOOTSTRAP_SERVERS` | URL to the Kafka instance | `kafka.cyberseas-io.eu:9092` | No | Used for sharing via Kafka, not yet implemented |
-| `KAFKA_SSL_CA_LOCATION` | Path to the Kafka CA certificate | `kafka/certs/ca/ca-cert.pem` | No | Used for sharing via Kafka, not yet implemented |
-| `KAFKA_SSL_CERTIFICATE_LOCATION` | Path to the Kafka client certificate | `kafka/certs/sappan/sappan-cert.pem` | No | Used for sharing via Kafka, not yet implemented |
-| `KAFKA_SSL_KEY_LOCATION` | Path to the Kafka client key | `kafka/certs/sappan/sappan-key.pem` | No | Used for sharing via Kafka, not yet implemented |
-| `KAFKA_CONSUMER_GROUP_ID` | Consumer group ID for the Kafka instance | `python-kafka-consumer` | No | Used for sharing via Kafka, not yet implemented |
-| `KAFKA_REGISTRY_PLAIN_SSL_KEY_LOCATION` | Path to the decrypted Kafka client key | `kafka/certs/sappan/sappan-key-plain.pem` | No | Used for sharing via Kafka, not yet implemented |
-| `APP_application_id` | An identifier for this application | `FRAUNHOFER-SASP` | No | Used for signing playbooks when shared |
+| __Wiki__ | `url` | The base url of the connected Mediawiki instance | No | - |
+| __Wiki__ | `api_path` | Path to the mediawiki api | No | - |
+| __Wiki__ | `user_path` | Path to the mediawiki user pages | No | - |
+| __Wiki__ | `bot_user` | Username of the mediawiki system user | No | The username of the wiki user who created the bot |
+| __MISP__ | `url` | URL to the MISP instance | Yes | Used for sharing playbooks via MISP, not essential for the tool to work if not used |
+| __Keycloak__ | `url` | URL to the Keycloak instance for SSO | No | - |
+| __Keycloak__ | `client` | Client ID for the Keycloak instance | No | - |
+| __Keycloak__ | `realm` | Realm for the Keycloak instance | No | - |
+| __Kafka__ | `client` | Client ID for the Kafka instance | Yes | Used for sharing playbooks via Kafka, not essential for the tool to work if not used |
+| __Kafka__ | `bootstrap_server` | URL to the Kafka instance | Yes | Used for sharing playbooks via Kafka, not essential for the tool to work if not used |
+| __Kafka__ | `registry_url` | URL to the Kafka registry instance | Yes | Used for sharing playbooks via Kafka, not essential for the tool to work if not used |
+| __Kafka__ | `consumer` | Consumer group ID for the Kafka instance | Yes | Used for sharing playbooks via Kafka, not essential for the tool to work if not used |
+| __Kafka__ | `ssl_ca` | Path to the Kafka CA certificate | Yes | Used for sharing playbooks via Kafka, not essential for the tool to work if not used |
+| __Kafka__ | `ssl_certificate` | Path to the Kafka client certificate | Yes | Used for sharing playbooks via Kafka, not essential for the tool to work if not used |
+| __Kafka__ | `ssl_key` | Path to the Kafka client key | Yes | Used for sharing playbooks via Kafka, not essential for the tool to work if not used |
+| __Kafka__ | `ssl_registry_key` | Path to the decrypted Kafka client key | Yes | Used for sharing playbooks via Kafka, not essential for the tool to work if not used |
+| __SASP__ | `app_application_id` | An identifier for this application | No | - |
 
-  ##### Keys.env
-| Variable | Description | Default Value | Notes |
-| --- | --- | --- | --- |
-| `MISP_KEY` | API key for the MISP instance | `` | - |
-| `HIVE_API_KEY` | API key for the Hive instance | `` | - |
-| `CORTEX_API_KEY` | API key for the Cortex instance | `` | - |
-| `KAFKA_SSL_KEY_PWD` | Password for the Kafka client key | `` | - |
+  ##### Keys.ini
+| Section | Variable | Description | Optional | Notes |
+| --- | --- | --- | --- | --- |
+| __Wiki__ | `bot_password` | Password of the mediawiki bot user | No | Should be of the form `bot_name@bot_password` |
+| __MISP__ | `key` | API key for the MISP instance | Yes | - |
+| __Kafka__ | `ssl_key_pwd` | Password for the Kafka client key | Yes | - |
+| __Keycloak__ | `client_secret` | Secret token for connected Keycloak instance | No | - |
 
 ### Automatic Setup
 1.  Install all the prerequisites from the previous chapter
-2.  Make sure the mediawiki is running and the connection information is correct in the `config/config.env` file.
+2.  Make sure the mediawiki is running and the connection information is correct in the config files.
 3.  Execute the following commands
 ```sh
+cd SASP
 python setup.py
 ```
 
 ### Manual Setup
 1. Install all the prerequisites from the previous chapter
-2. Make sure the mediawiki is running and the connection information is correct in the `config/config.env` file.
-4. Execute the following commands
+2. Make sure the mediawiki is running and the connection information is correct in the config files.
+3. Execute the following commands
 ```sh
+cd SASP
 # Creates the database
 python manage.py migrate
-# Creates the default user with the configuration information from the `*.env` files
+# Creates the default user with the configuration information from the `*.ini` files
 python manage.py make_default_user
 # Compiles the forms and pushes them to the wiki
 python manage.py update_forms
 ```
 
-### Updating the Tool
+## Updating the Tool
 Unless otherwise instructed you only need to update the database and the default user, so use the provided switches in the `setup.py` script to skip the form update and playbook import steps.
 
-### Running the Program
+## Running the Program
 Assuming everything is set up correctly, you can run the program with the following steps:
-1. Run SASP from the terminal/powershell while in the project's folder
+1. Run SASP from the terminal while in the project's folder
    ```sh
     python manage.py runserver
     ```  
@@ -130,13 +117,13 @@ Assuming everything is set up correctly, you can run the program with the follow
     ```sh
     python manage.py runserver 0.0.0.0:8000
     ```
-7. Open the browser and navigate to the URL that is printed in the terminal/powershell. By default this is `http://localhost:8000/sasp/`
+2. Open the browser and navigate to the URL that is printed in the terminal. By default this is `http://localhost:8000/sasp/`
 
 ### Additional Commands
 There are a few additional commands that can be used to interact with the tool all are invoked with `python manage.py <command>`. 
 - `import_playbook`: Imports a playbook from a json file into the tool
   - `--path`: Path to the json file (Required)
-- `make_default_user`: Creates a default user with the configuration information from the `*.env` files or overwrites the existing one
+- `make_default_user`: Creates a default user with the configuration information from the `*.ini` files or overwrites the existing one
 - `createsuperuser`: Django command to create a superuser. With this user you can access the admin interface of the tool at `http://localhost:8000/admin/` and manage the database
 
 <!-- FILES OVERVIEW -->
@@ -161,7 +148,6 @@ To give an overview of each file/folder:
 - `apps.py`: Django app configuration
 - `bpmn_util.py`: functions related to generating BPMN diagrams
 - `db_syncs.py`: functions for syncing the tool database with the mediawiki
-- `fake_stix.py`: old file, for use in a STIX demo, not used in the current version
 - `file_export_util.py`: functions for exporting playbooks to json
 - `file_import_util.py`: functions for importing playbooks from json
 - `forms.py`: Django forms, that provide user input for the tool
@@ -179,12 +165,6 @@ To give an overview of each file/folder:
 
 ### Frontend
 The UI was designed using Django. There are a variety of tutorials online that can help you get started with Django. The [official documentation](https://docs.djangoproject.com/en/5.0/) is also a good resource.
-
-
-## Roadmap
-This section shows a **very** general overview of the tasks that have been completed and other features that have yet to have been implemented.
- - [ ] Clean up repository structure, update documentation
- - [ ] Implement semantic functionality for the tool and remove the mediawiki dependency
 
 ### Release Notes
 

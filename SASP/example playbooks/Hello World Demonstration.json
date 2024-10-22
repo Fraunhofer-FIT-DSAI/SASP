@@ -1,0 +1,103 @@
+{
+    "type": "playbook",
+    "spec_version": "1.1",
+    "id": "playbook--acad08f9-abcd-48c6-9297-bf1da815030c",
+    "name": "Hello World Demonstration",
+    "description": "This is an example playbook",
+    "playbook_types": [
+        "notification"
+    ],
+    "created_by": "identity--0be4e2a0-1294-4df7-9834-43d8c2a5df62",
+    "created": "2024-09-16T07:54:54Z",
+    "modified": "2024-09-16T07:54:54Z",
+    "revoked": true,
+    "workflow_start": "step--68d2f914-992a-4308-aeaf-8ba246f9e596",
+    "workflow": {
+        "step--255380aa-7317-4084-b916-5640cdc465d5": {
+            "type": "single",
+            "name": "Be Angry",
+            "on_completion": "step--e282a503-9e0d-4993-84c6-e5f20480db66"
+        },
+        "step--da06fe29-16f3-489b-9b6e-be5234120cd3": {
+            "type": "single",
+            "name": "Be Happy",
+            "on_completion": "step--e282a503-9e0d-4993-84c6-e5f20480db66"
+        },
+        "step--17e55f25-c1f2-4b55-8dda-7e55f2befd2b": {
+            "type": "end",
+            "name": "End-Global"
+        },
+        "step--e282a503-9e0d-4993-84c6-e5f20480db66": {
+            "type": "end",
+            "name": "End-IF-1"
+        },
+        "step--d3badd5d-6dda-4f5f-9102-a656329b6b8d": {
+            "type": "end",
+            "name": "End-Parallel-1"
+        },
+        "step--4a4dcbc6-0734-49c0-b0a5-a20d791e37c0": {
+            "type": "single",
+            "name": "Evaluate Response",
+            "on_completion": "step--2dd17671-edec-4a58-bed1-c2e34a23624e"
+        },
+        "step--2dd17671-edec-4a58-bed1-c2e34a23624e": {
+            "type": "if-condition",
+            "name": "IF-Step-1",
+            "on_completion": "step--17e55f25-c1f2-4b55-8dda-7e55f2befd2b",
+            "on_true": [
+                "step--da06fe29-16f3-489b-9b6e-be5234120cd3"
+            ],
+            "on_false": [
+                "step--255380aa-7317-4084-b916-5640cdc465d5"
+            ]
+        },
+        "step--c12fc3b0-511d-4969-b293-8ef639fc7c06": {
+            "type": "parallel",
+            "name": "Parallel-1",
+            "on_completion": "step--4a4dcbc6-0734-49c0-b0a5-a20d791e37c0",
+            "next_steps": [
+                "step--b6066b3b-0de2-4023-b631-d382eed15264",
+                "step--ff0c180a-5ea4-46e3-bb52-8d0cbc963ca9",
+                "step--610f87c5-263f-49e8-b1ad-9cc6dc66eebb"
+            ]
+        },
+        "step--610f87c5-263f-49e8-b1ad-9cc6dc66eebb": {
+            "type": "single",
+            "name": "Say \"Hello Bird\"",
+            "on_completion": "step--d3badd5d-6dda-4f5f-9102-a656329b6b8d",
+            "commands": [
+                {
+                    "type": "manual",
+                    "command": "\"Do say that\""
+                }
+            ]
+        },
+        "step--ff0c180a-5ea4-46e3-bb52-8d0cbc963ca9": {
+            "type": "single",
+            "name": "Say \"Hello Stone\"",
+            "on_completion": "step--d3badd5d-6dda-4f5f-9102-a656329b6b8d"
+        },
+        "step--b6066b3b-0de2-4023-b631-d382eed15264": {
+            "type": "single",
+            "name": "Say \"Hello Tree\"",
+            "on_completion": "step--d3badd5d-6dda-4f5f-9102-a656329b6b8d"
+        },
+        "step--952da296-cda0-4c6f-a8e0-0fb60a98eab6": {
+            "type": "single",
+            "name": "Say \"Hello World\"",
+            "on_completion": "step--c12fc3b0-511d-4969-b293-8ef639fc7c06",
+            "commands": [
+                {
+                    "type": "attack-cmd",
+                    "command": "Do say that"
+                }
+            ]
+        },
+        "step--68d2f914-992a-4308-aeaf-8ba246f9e596": {
+            "type": "start",
+            "name": "Start Step",
+            "description": "Thing starts here",
+            "on_completion": "step--952da296-cda0-4c6f-a8e0-0fb60a98eab6"
+        }
+    }
+}

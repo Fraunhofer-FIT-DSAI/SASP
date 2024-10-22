@@ -1,0 +1,33 @@
+{% extends "sharing_base.html" %}
+{% load static %}
+
+{% block title %}
+    <title>CACAO v2 Validation Utility</title>
+{% endblock %}
+
+
+{% block content %}
+    {% block heading %}
+    <h1>CACAO v2 Validation Utility</h1>
+    {% endblock %}
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <h2>Input field:</h2>
+                <textarea id="validator-input" class="form-control" rows="10"></textarea>
+                <br>
+                <h2>Results:</h2>
+                <div class="card">
+                    <div id="validator-results" class="card-body"></div>
+                </div>
+                <script src="{% static 'js/scripts/cacao2_validator.js' %}"></script>
+            </div>
+        </div>
+    </div>
+    <div class="container navbar navbar-fixed-bottom">
+        {% comment %} Attribution {% endcomment %}
+        <p class="fw-light text-body-secondary">
+            This tool is based on work done as part of <a href="https://github.com/opencybersecurityalliance/cacao-roaster">cacao-roaster</a> and used under Apache 2.0 license.
+        </p>
+    </div>
+{% endblock %}
