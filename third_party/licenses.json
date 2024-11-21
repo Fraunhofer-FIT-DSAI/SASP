@@ -67,7 +67,7 @@
     "bootstrap": {
         "license": "MIT",
         "version": "5.3.0",
-        "url": "https://pypi.org/project/bootstrap/"
+        "url": "https://getbootstrap.com/docs/5.3/getting-started/introduction/"
     },
     "webpack": {
         "license": "MIT",
@@ -82,7 +82,7 @@
     "react": {
         "license": "MIT",
         "version": "18.3.1",
-        "url": "https://reactjs.org/"
+        "url": "https://github.com/facebook/react"
     },
     "select2": {
         "license": "MIT",
