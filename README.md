@@ -168,7 +168,7 @@ The UI was designed using Django. There are a variety of tutorials online that c
 
 ### Release Notes
 
-To track the incremental updates, please refer to the [CHANGELOG](./CHANGELOG) file.
+To track the incremental updates, please refer to the [CHANGELOG](./CHANGELOG.md) file.
 
 ## Technologies Used
 This section should list all the major technologies that are used to develop the project within the repository.
