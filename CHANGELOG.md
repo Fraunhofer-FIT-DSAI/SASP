@@ -1,4 +1,4 @@
-## Release 0.8 - Ready for open source
+## Release 1.0.0 - open source
 ### Features:
 - The tool has undergone wide ranging rewrites, for better future development and maintenance
 - Import/Export across platforms has been standardized
