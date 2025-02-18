@@ -72,6 +72,7 @@ The program was developed to use SSO solution Keycloak for user management. For 
 | __Kafka__ | `ssl_key` | Path to the Kafka client key | Yes | Used for sharing playbooks via Kafka, not essential for the tool to work if not used |
 | __Kafka__ | `ssl_registry_key` | Path to the decrypted Kafka client key | Yes | Used for sharing playbooks via Kafka, not essential for the tool to work if not used |
 | __SASP__ | `app_application_id` | An identifier for this application | No | - |
+| __Hive__ | `hive_url` | Url for the Hive instance | Yes | - |
 
   ##### Keys.ini
 | Section | Variable | Description | Optional | Notes |
@@ -80,6 +81,7 @@ The program was developed to use SSO solution Keycloak for user management. For 
 | __MISP__ | `key` | API key for the MISP instance | Yes | - |
 | __Kafka__ | `ssl_key_pwd` | Password for the Kafka client key | Yes | - |
 | __Keycloak__ | `client_secret` | Secret token for connected Keycloak instance | No | - |
+| __Hive__ | `hive_api_key` | API key for the Hive instance | Yes | - |
 
 ### Automatic Setup
 1.  Install all the prerequisites from the previous chapter
