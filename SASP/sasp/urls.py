@@ -7,7 +7,7 @@ import sasp.views as views
 import sasp.views.admin as admin_views
 import sasp.views.playbook_views as playbook_views
 # import sasp.views.kafka_views as kafka_views
-import sasp.views.hive_views as hive_views
+import sasp.views.automation as automation
 import sasp.views.base as base_views
 from .auth.keycloak_integration import keycloak_login_landing_page, keycloak_logout
 
@@ -26,6 +26,8 @@ urlpatterns = [
 
     path('accounts/', admin_views.UserProfileDetailView.as_view(), name='settings'),
     path('accounts/connected-tools/<str:login_name>', admin_views.UserProfileLoginView.as_view(), name='settings-logins'),
+    path('accounts/connected-tools/<str:login_name>/edit', admin_views.UserProfileLoginEditView.as_view(), name='settings-logins-edit'),
+    path('accounts/connected-tools/<str:login_name>/reconnect', admin_views.UserProfileLoginReconnectView.as_view(), name='settings-logins-reconnect'),
     # path('accounts/login/', auth_views.LoginView.as_view(template_name='accounts/login.html'), name='login'),
     path('accounts/logout/', keycloak_logout, name='logout'),
 
@@ -53,12 +55,16 @@ urlpatterns = [
 
     path('api/', include(router.urls)),
     path('api/command', base_views.test_api, name='api-command'),
+    path('api/automation/bpmn/<int:pk>', automation.AutomationRunPlaybookBPMN.as_view(), name='api-automation-bpmn'),
 
-    path('hive/', hive_views.TheHiveDashboard, name='thehive-dashboard'),
-    path('hive/action/run/<str:playbook_id>/<str:case_id>', hive_views.TheHiveRunPlaybook, name='thehive-run-playbook'), 
-    path('hive/action/delete/<int:pk>', hive_views.deleteTheHiveRun, name='thehive-delete-run'),
-    path('hive/details/<int:pk>', hive_views.TheHiveRunDetails.as_view(), name='thehive-run-details'),
-    path('hive/confirm_request/<int:pk>/<str:uuid>/<str:action>', hive_views.confirm_request, name='thehive-confirm-request'),
+    path('automation/', automation.AutomationDashboard.as_view(), name='automation-dashboard'),
+    path('automation/run/new/<int:pk_pb>', automation.AutomationRunContextView.as_view(), name='automation-context-form'),
+    path('automation/run/details/<int:pk>', automation.AutomationRunDetails.as_view(), name='automation-run-details'),
+    path('automation/run/confirm_request/<int:pk>/<str:uuid>/<str:action>', automation.confirm_request, name='automation-confirm-request'),
+    path('automation/run/delete/<int:pk>', automation.AutomationDeleteView.as_view(), name='automation-delete-run'),
+    # path('hive/action/run/<str:playbook_id>/<str:case_id>', automation.TheHiveRunPlaybook, name='thehive-run-playbook'), 
+    # path('hive/action/delete/<int:pk>', automation.deleteTheHiveRun, name='thehive-delete-run'),
+    # path('hive/details/<int:pk>', automation.TheHiveRunDetails.as_view(), name='thehive-run-details'),
 
     # Redirects
     path('accounts/login/', redirect_to_index),

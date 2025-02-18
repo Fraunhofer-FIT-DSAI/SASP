@@ -240,8 +240,10 @@ class NameEntryForm(forms.Form):
         if not name:
             raise forms.ValidationError(knowledge_base.messages.sharing.misp.errors.import_.no_name__TXT())
         
-        if Wiki().get_page_exists(wiki_name(name)):
+        if Wiki().connected and Wiki().get_page_exists(wiki_name(name)):
             raise forms.ValidationError(knowledge_base.messages.sharing.misp.errors.import_.page_exists__TXT())
+        if Playbook.query(wiki_page_name=wiki_name(name)).exists():
+            raise forms.ValidationError(knowledge_base.messages.sharing.misp.errors.import_.playbook_exists__TXT())
         
         disallowed_chars = ["/", "\\", ":", "*", "?", "\"", "<", ">", "|", "#", "[", "]", "(" ,")", "{", "}"]
         errors = []

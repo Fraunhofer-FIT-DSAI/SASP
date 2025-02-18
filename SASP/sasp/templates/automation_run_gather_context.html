@@ -1,0 +1,30 @@
+{% extends "base_generic.html" %}
+
+{% block extra_head %}
+{% load urlparams %}
+{% load i18n %}
+{% load django_bootstrap5 %}
+{% endblock %}
+
+{% block content %}
+    <div class="col-md-12 content">
+        {% block heading %}
+        <h1>{{title}}</h1>
+        {% endblock heading %}
+        <div class="row content-section">
+            <div class="col-md-12">
+                <h2>{% translate "Provide Context for Run" %}</h2>
+                <form method="post" action="" class="form">
+                    {% csrf_token %}
+                    {% bootstrap_form form %}
+                    {% bootstrap_button button_type="submit" content="OK" %}
+                </form>
+            </div>
+        </div>
+
+    </div>
+{% endblock %}
+
+{% block title %}
+<title>{{title}}</title>
+{% endblock %}

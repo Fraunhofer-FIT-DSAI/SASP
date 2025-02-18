@@ -1,0 +1,179 @@
+{% extends "base_generic.html" %}
+{% load static %}
+
+{% block extra_head %}
+{{ block.super }}
+<script src="{% static 'js/libraries/bpmn-navigated-viewer.development.js' %}" type="application/javascript"></script>
+<link rel="stylesheet" href="{% static 'css/libraries/bpmn-js.css' %}">
+{% endblock extra_head %}
+
+{% block title %}
+<title>{{title}}</title>
+{% endblock %}
+
+
+{% block content %}
+    {% block heading %}
+    <div class="row mb-2"><div class="col">
+        <h1>{{title}}</h1>
+    </div></div>
+    {% endblock %}
+    <div class="row mb-2"><div class="col">
+        <h2>Status: {{ playbook_status }}</h2>
+        <div class="card card-body">
+            <pre class="json-field" data-collapsed="1">{{ run_info|safe }}</pre>
+        </div>
+    </div></div>
+    <hr>
+    <div class="row mb-2"><div class="col">
+        <h2>Confirmation Requests</h2>
+        {% for conf_req in confirmation_requests.values %}
+        <div class="card card-body">
+            <h3>{{ conf_req.title }}</h3>
+            <table class="table table-sm">
+                <tr>
+                    <th>Message</th>
+                    <td>{{ conf_req.message }}</td>
+                </tr>
+                <tr>
+                    <th>Data</th>
+                    <td>
+                        <div class="card card-body">
+                            <pre class="json-field" id="{{ conf_req.data_field_id }}">{{ conf_req.data|safe }}</pre>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Timeout</th>
+                    <td>{{ conf_req.timeout }}</td>
+                </tr>
+                <tr>
+                    <th>Timestamp</th>
+                    <td>{{ conf_req.timestamp }}</td>
+                </tr>
+            </table>
+            {% if conf_req.approved %}
+            <a class="btn btn-sm btn-outline-success me-1 disabled">Confirmed</a>
+            {% else %}
+            {% if conf_req.abort %}
+            <a class="btn btn-sm btn-outline-danger me-1 disabled">Aborted</a>
+            {% else %}
+            <div class="btn-group">
+                <a class="btn btn-sm btn-outline-info me-1" href="{{ conf_req.confirm_url }}">Confirm</a>
+                <a class="btn btn-sm btn-outline-warning me-1" href="{{ conf_req.deny_url }}">Deny</a>
+            </div>
+            {% endif %}
+            {% endif %}
+            {% comment %} <a class="btn btn-sm btn-outline-danger me-1" href="{{ conf_req.cancel_url }}">Cancel</a> {% endcomment %}
+        </div>    
+        {% endfor %}
+    </div></div>
+    <hr>
+    <div class="row mb-2"><div class="col">
+        <div class="card bpmn-container">
+            <ul class="list-group list-group-horizontal">
+                {% for label,code in bpmn_legend %}
+                    <li class="list-group-item flex-fill"><svg width="25" height="25" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="20" height="20" x="2" y="2" rx="4" ry="4" fill="{{code}}" />
+                    </svg>
+                    {{label}}
+                    </li>                
+                {% endfor %}
+            </ul>
+            <div class="card-body" id="canvas"></div>
+        </div>
+    </div></div>
+    <hr>
+    <div class="row mb-2"><div class="col">
+        <h2>Playbook Output</h2>
+        {% for message in output %}
+        <div class="card card-body mt-2">
+            <h3>{{ message.title }}</h3>
+            <p>
+            {% if message.message.level == "info" %}
+            <span class="badge bg-info">{{ message.message.level }}</span>
+            {% elif message.message.level == "warning" %}
+            <span class="badge bg-warning">{{ message.message.level }}</span>
+            {% elif message.message.level == "error" %}
+            <span class="badge bg-danger">{{ message.message.level }}</span>
+            {% endif %}
+            {{ message.message.message }}</p>
+            <div class="card card-body">
+                <pre class="json-field" data-collapsed="true">{{ message.data|safe }}</pre>
+            </div>
+        </div>
+        {% endfor %}
+    </div></div>
+
+{% endblock content %}
+
+{% block extra_js %}
+{{ block.super }}
+<script src="{% static 'webpack/json_parser.js' %}"></script>
+<script type="application/javascript">
+    // viewer instance
+    var bpmnViewer = new BpmnJS({
+      container: '#canvas',
+      width: '100%',
+      height: '100%',
+      keyboard: {
+        bindTo: window
+      }
+    });
+
+    let execution_active = {{ execution_active|yesno:"true,false" }};
+  
+  
+    /**
+     * Fetch diagram xml from server.
+     */
+    function fetchDiagram() {
+        const url_ = '{{ bpmn_url }}';
+        return fetch(url_)
+            .then(function(response) {
+                try {
+                    return response.json();
+                } catch (err) {
+                    console.error('could not fetch BPMN 2.0 diagram', err);
+                    return null;
+                }
+            });
+    }
+    
+    /**
+     * Open diagram in our viewer instance.
+     *
+     * @param {String} bpmnXML diagram to display
+     */
+    async function openDiagram(bpmnXML) {
+  
+      // import diagram
+      try {
+  
+        await bpmnViewer.importXML(bpmnXML);
+  
+        // access viewer components
+        var canvas = bpmnViewer.get('canvas');
+        var overlays = bpmnViewer.get('overlays');
+  
+        // zoom to fit full viewport
+        canvas.zoom('fit-viewport');
+      } catch (err) {
+  
+        console.error('could not import BPMN 2.0 diagram', err);
+      }
+    }
+  
+  
+    // get the diagram
+    fetchDiagram().then(openDiagram);
+
+    // Set automatic refresh every x seconds if execution is active
+    if (execution_active) {
+        setInterval(function() {
+            fetchDiagram().then(openDiagram);
+        }, 5000);
+    }
+
+  </script>
+{% endblock extra_js %}

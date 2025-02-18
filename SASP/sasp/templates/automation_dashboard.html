@@ -1,0 +1,112 @@
+{% extends "base_generic.html" %}
+
+{% block extra_head %}
+{% load urlparams %}
+{% load i18n %}
+{% load django_bootstrap5 %}
+{% endblock %}
+
+{% block title %}
+<title>{{title}}</title>
+{% endblock %}
+
+{% block content %}
+    <div class="col-md-12 content">
+        {% block heading %}
+        <h1>{{title}}</h1>
+        {% if form.errors %}
+            <div class="alert alert-danger" role="alert">
+                <h4 class="alert-heading">Form reported errors:</h4>
+                <div>{{ form.errors }}</div>
+            </div>
+        {% endif %}
+        {% endblock heading %}
+        <div class="row content-section">
+            <div class="col-md-12">
+                <h2>{% translate "Run a Playbook" %}</h2>
+                <form method="post" action="" class="form">
+                    {% csrf_token %}
+                    {% bootstrap_field form.playbook %}
+                    {% bootstrap_button button_type="submit" content="OK" %}
+                </form>
+            </div>
+        </div>
+        <div class="row content-section"><div class="col-md-12">
+            <h2>{% translate "Open Cases on The Hive" %}</h2>
+            {% if not hive_logged_in %}    
+            <div class="alert alert-warning" role="alert">{% translate "Hive is not connected" %}</div>
+            {% else %}
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col">{% translate "caseID" %}</th>
+                        <th scope="col">{% translate "Title" %}</th>
+                        <th scope="col">{% translate "Description" %}</th>
+                        <th scope="col">{% translate "createdBy" %}</th>
+                        <th scope="col">{% translate "updatedBy" %}</th>
+                        <th scope="col">{% translate "tags" %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if case_list %}
+                        {% for case in case_list %}
+                            <tr id="{{case.idx}}">
+                                <td>{{ case.caseID }}</td>
+                                <td>{{ case.title }}</td>
+                                <td>{{ case.description }}</td>
+                                <td>{{ case.createdBy }}</td>
+                                <td>{{ case.updatedBy }}</td>
+                                <td>{{ case.tags }}</td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="7">-</td>
+                        </tr>
+                    {% endif %}
+                </tbody>    
+            </table>
+            {% endif %}
+        </div></div>
+        <div class="row content-section"><div class="col-md-12">
+            <h2>{% translate "Active Playbook Executions" %}</h2>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col">{% translate "Playbook Name" %}</th>
+                        <th scope="col">{% translate "CaseID" %}</th>
+                        <th scope="col">{% translate "Status" %}</th>
+                        <th scope="col">{% translate "Started" %}</th>
+                        <th scope="col">{% translate "Last Update" %}</th>
+                        <th scope="col">{% translate "Completed" %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if active_runs_list %}
+                        {% for active_run in active_runs_list %}
+                            <tr class="tr-clickable" data-trc-href="{{active_run.href}}" id="{{active_run.idx}}">
+                                <td>{{ active_run.playbook_id }}</td>
+                                <td>{{ active_run.case_id }}</td>
+                                <td>{{ active_run.status }}</td>
+                                <td>{{ active_run.started }}</td>
+                                <td>{{ active_run.last_update }}</td>
+                                <td>{{ active_run.completed }}</td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="6">-</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div></div>
+        
+
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+{% load static %}
+<script src="{% static 'webpack/tr_clickable.js' %}"></script>
+{% endblock extra_js %}

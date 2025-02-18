@@ -29,23 +29,26 @@ class Wiki:
         trim_blocks=True
     )
     kb = knowledge.KnowledgeBase()
-
-    def __init__(self) -> None:
-        
-        smw = UserProfile.objects.get(user__username='default').logins.get(name='smw')
-
-        # init wiki
+    site: Site = None
+    connected: bool = None
+    
+    @classmethod
+    def connect(cls, url, path, username, password) -> bool:
         try:
-            self.site = Site(
-                smw.url.split('//')[1],
-                scheme=smw.url.split('://')[0],
-                path=smw.additional_fields['script_path'],
+            cls.site = Site(
+                url.split('//')[1],
+                scheme=url.split('://')[0],
+                path=path,
             )
-            self.site.login(smw.username, smw.password)
-            self.site.force_login = False
+            cls.site.login(username, password)
+            cls.site.force_login = False
+            cls.connected = True
+            return True
         except requests.exceptions.ConnectionError:
-            self.logger.error("Could not connect to wiki, check your settings")
-            exit(1)
+            cls.logger.warning("Could not connect to wiki, check your settings")
+            cls.site = None
+            cls.connected = False
+            return False
 
     """Read-only functions for the wiki"""
 
@@ -868,7 +871,8 @@ class Wiki:
     
     def delete_page(self,page_name):
         """Delete a playbook or playbook object"""
-        self._delete_wiki_object(page_name)
+        if self.connected:
+            self._delete_wiki_object(page_name)
     
     def rename_page(self,page_name,new_name):
         """Rename a playbook or playbook object"""
@@ -965,7 +969,8 @@ class Wiki:
                     f.write(template_str)
                 pass
             else:
-                self.site.pages[page_name].edit(template_str, 'Wiki page updated')
+                if self.connected:
+                    self.site.pages[page_name].edit(template_str, 'Wiki page updated')
         except Exception as e:
             self.logger.error("Error setting page %s",page_name)
             self.logger.error(e)
@@ -973,7 +978,8 @@ class Wiki:
         return 0
     
     def set_bpmn(self,page_name,bpmn_xml):
-        self.site.pages[f'BPMN:{page_name}'].edit(bpmn_xml, 'Updated BPMN!')
+        if self.connected:
+            self.site.pages[f'BPMN:{page_name}'].edit(bpmn_xml, 'Updated BPMN!')
     
     def get_form_ask(self,page_name):
         """Return the form of a page using ask query (faster?)"""

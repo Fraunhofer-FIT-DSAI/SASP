@@ -8,3 +8,4 @@ from .base import (
 )
 from . import sharing
 from . import form_fields
+import sasp.forms.automation as automation

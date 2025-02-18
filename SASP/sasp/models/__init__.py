@@ -9,8 +9,9 @@ from sasp.pytools import classproperty, iter_subclasses
 from copy import copy
 
 import logging
-import json
 import uuid
+import enum
+import time
 
 
 class Playbook(models.Model):
@@ -19,18 +20,31 @@ class Playbook(models.Model):
         class AutomationException(Exception):
             field_name = None
             traceback = None
-            def __init__(self, *args, **kwargs):
-                super().__init__(*args, **kwargs)
-                self.field_name = kwargs.get("field_name", None)
-                self.traceback = kwargs.get("traceback", None)
+            def __init__(self, message, *args, **kwargs):
+                self.field_name = kwargs.pop("field_name", None)
+                self.traceback = kwargs.pop("traceback", None)
+                self.message = message
+                super().__init__(message, *args, **kwargs)
         
-        def __init__(self, playbook: 'Playbook', *args, db_object: 'Automation_Instance'=None, **kwargs):
+        class AutomationNotReadyException(AutomationException):
+            pass
+        
+        class AutomationExecutionException(AutomationException):
+            pass
+        
+        class AutomationTimeoutException(AutomationException):
+            pass
+        
+        def __init__(self, playbook: 'Playbook', *args, **kwargs):
             """Initializes the automation with the playbook object."""
             self.playbook = playbook
-            if db_object is not None:
-                self.db_object = db_object
-            else:
-                self.db_object = None
+            self.ready_errors = []
+            self.execution_errors = []
+            
+            self.db_object = None
+                
+        def ready_error(self, exception: AutomationNotReadyException):
+            self.ready_errors.append(exception)
         
         def ready(self) -> bool:
             """Returns whether the automation is ready to be executed."""
@@ -40,7 +54,12 @@ class Playbook(models.Model):
             """Returns the context dictionary for the automation."""
             raise NotImplementedError("This method should be implemented by the subclass")
         
-        def execute(self, *args, **kwargs):
+        @classmethod
+        def get_context_form(cls):
+            raise NotImplementedError("This method should be implemented by the subclass")
+        
+        @classmethod
+        def execute(cls, *args, **kwargs) -> 'Automation_Instance':
             """Executes the Playbook."""
             raise NotImplementedError("This method should be implemented by the subclass")
         
@@ -872,7 +891,7 @@ class Playbook_Object(models.Model):
         return self.name or self.wiki_page_name
     
     def get_label(self):
-        value = self.get_name()
+        value = self.get_name() or self.cls_label
         if self.archived:
             value += _(" (Archived)")
         return value
@@ -948,6 +967,19 @@ class Automation_Instance(models.Model):
     This class represents an instance of the automated execution of a playbook, via the Hive. It is used to track the status of the execution
     and communicate with the thread that is executing the playbook.
     """
+    class Status(str, enum.Enum):
+        def __new__(cls, value: str, label):
+            obj = str.__new__(cls, value)
+            obj._value_ = value
+            obj.label = label
+            return obj
+        
+        INITIALIZED = ("Initialized", _("Initialized"))
+        RUNNING = ("Running", _("Running"))
+        COMPLETED = ("Completed", _("Completed"))
+        ERROR = ("Error", _("Error"))
+        CANCELED = ("Canceled", _("Canceled"))
+        
 
     # The playbook that is being executed
     playbook = models.ForeignKey(
@@ -957,34 +989,68 @@ class Automation_Instance(models.Model):
         null=True,
         blank=True,
     )
+    # A json representation of the playbook at the time of execution
+    playbook_frozen = models.JSONField(default=dict, null=False, blank=True)
+    # A wiki_name:Status dictionary of the playbook objects that are being executed
+    objects_state = models.JSONField(default=dict, null=False, blank=True)
+    
     # The case that is being executed
     case_id = models.CharField(max_length=200, null=True, blank=True)
     case_name = models.CharField(max_length=200, null=True, blank=True)
     # The status of the execution
     status = models.CharField(max_length=200, null=True, blank=True)
-    result = models.CharField(max_length=200, null=True, blank=True)
     # The output of the execution
-    output = models.TextField(null=True, blank=True)
+    output = models.JSONField(null=True, blank=True)
+    output_updates = []
     # Object for registering confirmation requests
     confirmation_requests = models.JSONField(default=dict, null=False, blank=True)
-    last_update = models.DateTimeField(auto_now_add=True)
+    last_update = models.DateTimeField(auto_now=True)
     # The time the execution was started
     started = models.DateTimeField(auto_now_add=True)
     # The time the execution was completed
     completed = models.DateTimeField(null=True, blank=True)
 
-    thread_id = models.IntegerField(null=True, blank=True)
-
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.logger = logging.getLogger(__name__)
+    
+    @property
+    def status_label(self):
+        return self.Status(self.status).label
 
-    def initialize(self):
+    def initialize(self, playbook, playbook_frozen, case_id, case_name):
         """
         This method gets a new instance ready for execution.
         """
-        self.status = "Initialized"
+        self.status = self.Status.INITIALIZED.value
+        self.playbook = playbook
+        self.playbook_frozen = playbook_frozen
+        self.case_id = case_id
+        self.case_name = case_name
         self.save()
+    
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+    
+    @transaction.atomic
+    def complete(self, status: Status):
+        """
+        This method marks the execution as completed.
+        """
+        # NOTE: sqlite does not support select_for_update, so this method will not work with sqlite
+        if connection.vendor == "sqlite":
+            obj = self
+        elif connection.vendor in ["postgresql", "mysql", "oracle"]:
+            obj = self.get_queryset().select_for_update().get()
+        else:
+            raise Exception("Unsupported database")
+
+        obj.refresh_from_db()
+
+        obj.status = status.value
+        obj.completed = timezone.now()
+        obj.save()
+        return obj
 
     def get_run_info(self):
         """
@@ -992,18 +1058,28 @@ class Automation_Instance(models.Model):
         """
         run_info = {
             "playbook": self.playbook.get_label(),
-            "case_id": self.case_id,
-            "status": self.status,
+            "case_id": self.case_id or "None",
+            "status": self.status_label,
+            "started": self.started,
+            "completed": self.completed,
+            "last_update": self.last_update,
             # "json_representation": self.output,
         }
-        if self.output:
-            run_info["json_representation"] = self.output
-        else:
-            run_info["json_representation"] = "{}"
+        run_info["output"] = self.output or []
         return run_info
-
+        
+    def update_output(self, value, objects_state=None):
+        obj = self.update_output_transaction(value, objects_state)
+        self.output_updates.append(time.time())
+        self.output_updates = [x for x in self.output_updates if time.time() - x < 1]
+        if len(self.output_updates) > 5:
+            # If the output is updated too frequently, web requests will be blocked
+            # so we throttle the updates a bit
+            time.sleep(1)
+        return obj
+        
     @transaction.atomic
-    def update_output(self, path: list, value):
+    def update_output_transaction(self, value, objects_state=None):
         """
         This method updates the output of the execution, by updating the value at the specified path. In a thread safe manner.
         """
@@ -1017,80 +1093,16 @@ class Automation_Instance(models.Model):
 
         obj.refresh_from_db()
 
-        if not obj.output:
-            json_ = {}
+        if obj.output:
+            obj.output = [value] + obj.output
         else:
-            json_ = json.loads(obj.output)
-        current = json_
-
-        if len(path) == 0:  # Root
-            if isinstance(value, str):  # Happens when first initializing the output
-                value = json.loads(value)
-            if isinstance(value, list):  # Shouldn't happen
-                json_ = value
-            elif isinstance(value, dict):  # Happens every time the root is updated
-                json_.update(value)
-            else:
-                raise Exception("Invalid value type")
-            obj.output = json.dumps(json_)
-            obj.save()
-            return
-
-        for key in path[:-1]:
-            if isinstance(current, dict) and key not in current:
-                current[key] = {}
-            current = current[key]
-        if isinstance(value, list):
-            current[path[-1]] = value
-        elif isinstance(value, dict):
-            if path[-1] in current:
-                current[path[-1]].update(value)
-            else:
-                current[path[-1]] = value
-        else:
-            current[path[-1]] = value
-        obj.output = json.dumps(json_)
+            obj.output = [value]
+        
+        if objects_state:
+            obj.objects_state = objects_state
+        
         obj.save()
-
-    @transaction.atomic
-    def update_fields(self, **kwargs):
-        """
-        This method updates the fields of the object, in a thread safe manner.
-        Please do not use this method to update the output field, use update_output instead.
-        """
-        # Read the object from the database
-        # NOTE: sqlite does not support select_for_update, so this method will not work with sqlite
-        if connection.vendor == "sqlite":
-            obj = self
-        elif connection.vendor in ["postgresql", "mysql", "oracle"]:
-            obj = self.get_queryset().select_for_update().get()
-        else:
-            raise Exception("Unsupported database")
-
-        obj.refresh_from_db()
-
-        # Update the fields
-        if "playbook" in kwargs:
-            self.logger.error(
-                "Cannot update playbook field of already running automation instance"
-            )
-        if "case_id" in kwargs:
-            self.logger.error(
-                "Cannot update case_id field of already running automation instance"
-            )
-        if "status" in kwargs:
-            obj.status = kwargs["status"]
-        if "result" in kwargs:
-            obj.result = kwargs["result"]
-        if "output" in kwargs:
-            self.logger.error("Use update_output to update the output field")
-        if "last_update" in kwargs:
-            obj.last_update = kwargs["last_update"]
-        if "started" in kwargs:
-            obj.started = kwargs["started"]
-        if "completed" in kwargs:
-            obj.completed = kwargs["completed"]
-        obj.save()
+        return obj
 
     @transaction.atomic
     def register_confirmation_request(self, command_info):
@@ -1175,6 +1187,7 @@ class Automation_Instance(models.Model):
         obj.confirmation_requests[cmd_uuid]["abort"] = True
         obj.save()
 
+    @transaction.atomic
     def get_confirmation_request(self, cmd_uuid):
         # Read the object from the database
         # NOTE: sqlite does not support select_for_update, so this method will not work with sqlite
@@ -1192,31 +1205,8 @@ class Automation_Instance(models.Model):
             raise Exception(f"Confirmation request {cmd_uuid} does not exist")
         return obj.confirmation_requests[cmd_uuid]
 
-    # On deletion
-    def delete(self, *args, **kwargs):
-        """
-        This method overrides the default delete method, to clean up.
-        """
-        from ..logic_management import ThreadManager
-
-        # Stop the thread
-        ThreadManager().kill_thread(
-            self.thread_id,
-            ignore_implementation_warning=kwargs.pop(
-                "ignore_implementation_warning", True
-            ),
-        )
-        # Register the deletion (will point out any errors)
-        success, conflicts = ThreadManager().register_deletion(self.thread_id, self)
-        if not success:
-            self.logger.error(
-                f"Errors occured while deleting automation instance {self.pk}: {conflicts}"
-            )
-        # Delete the object
-        super().delete(*args, **kwargs)
-
     def __str__(self):
-        return f"{self.playbook} - {self.case_id} - {self.status}"
+        return f"{self.playbook} - {self.case_id if self.case_id else _('No case id')} - {self.status}"
 
 
 # Import at bottom because of circular dependencies

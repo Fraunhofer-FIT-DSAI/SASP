@@ -59,6 +59,7 @@ class LoginInfo(models.Model):
     token = models.CharField(max_length=255, null=True, blank=True)
     expires = models.DateTimeField(null=True, blank=True)
     additional_fields = models.JSONField(null=True, blank=True)
+    connected = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         if not self.label:

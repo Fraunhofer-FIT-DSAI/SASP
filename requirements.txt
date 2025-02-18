@@ -1,3 +1,4 @@
+thehive4py==2.0.0b8
 confluent_kafka==2.5.3
 Django==5.1.5
 django-bootstrap5==24.3
@@ -12,3 +13,4 @@ python-dotenv==1.0.1
 Requests==2.32.3
 rich==13.8.0
 httpx==0.27.2
+networkx==3.4.2
