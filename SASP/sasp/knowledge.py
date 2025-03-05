@@ -55,6 +55,22 @@ class Sharing:
             }
         }
 
+class BPMN:
+    failed_color = '#EF9A9A'
+    failed_color_border = '#C62828'
+    success_color = '#81C784'
+    success_color_border = '#2E7D32'
+    in_progress_color = '#90CAF9'
+    in_progress_color_border = '#1565C0'
+    initatialized_color = '#E0E0E0'
+    initialized_color_border = '#616161'
+    active_color = '#FFED89'
+    active_color_border = '#5E4E1C'
+    default_color = '#FFFFFF'
+    default_color_border = '#000000'
+    walked_edge_color = '#000000'
+    unmarked_edge_color = '#666666'
+
 class KnowledgeBase:
     logger = logging.getLogger(__name__)
 

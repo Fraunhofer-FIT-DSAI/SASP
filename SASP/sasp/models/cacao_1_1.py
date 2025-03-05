@@ -1,24 +1,34 @@
-from . import Playbook, Playbook_Object, Semantic_Relation
+import time
+from . import Playbook, Playbook_Object, Semantic_Relation, Automation_Instance
 from sasp.pytools import classproperty
 import sasp.bpmn_util
 import sasp.wiki_interface
 import sasp.knowledge
 import sasp.forms.form_fields as form_fields
 import sasp.forms as forms
+import sasp.automation_component.stix_parsing as stix_parsing
+import sasp.external_apis.hive_cortex_api as hive_cortex_api
 
 from django.utils import timezone
+from django.utils.translation import gettext as _
 from django.urls import reverse
 from django.core.exceptions import ValidationError
 import django.forms.widgets as widgets
 
 from datetime import datetime
 from datetime import timezone as dt_timezone
+from typing import List, Tuple
+from threading import Thread
 import uuid
 import json
 import re
 import enum
 import base64
+import requests
+import traceback
+import logging
 
+logger = logging.getLogger(__name__)
 
 class FT(enum.Enum):
     string = enum.auto()
@@ -110,6 +120,216 @@ class FT(enum.Enum):
 class CACAO_1_1(Playbook):
     class Meta:
         proxy = True
+    class Automation(Playbook.Automation):
+        playbook:'CACAO_1_1'
+        db_object:Automation_Instance
+        def __init__(self, playbook: 'CACAO_1_1', *args, **kwargs):
+            """Initializes the automation with the playbook object."""
+            super().__init__(playbook, *args, **kwargs)
+            self.objects = self.playbook.playbook_objects.all()
+            self.objects = [obj.resolve_subclass() for obj in self.objects]
+            self.objects = {obj.wiki_page_name:obj for obj in self.objects}
+            self.start_step = None
+            self.exception_step_ = None
+            self.marked_ready = set()
+            self.context = None
+            self.id_counter = None
+            
+            self.hive:'hive_cortex_api.HiveAPI' = None
+            self.case_id:str = None
+            
+            self.objects_state_cache = dict()
+        
+        @classmethod
+        def get_context_form(cls):
+            return forms.automation.AutomationContextFormCACAO_1_1
+        
+        def generate_id(self):
+            if self.id_counter is None:
+                self.id_counter = 0
+            else:
+                self.id_counter += 1
+            return self.id_counter
+        
+        def get_object(self, wiki_page_name, default=None):
+            return self.objects.get(wiki_page_name, default)
+        
+        @property
+        def exception_step(self):
+            if self.exception_step_:
+                return self.exception_step_
+            
+            pb:CACAO_1_1_Playbook = self.playbook.get_root()
+            exception_step = pb.Field_WorkflowException.get_field(pb)
+            if exception_step is None:
+                raise self.AutomationNotReadyException("No exception step defined", field_name=pb.Field_WorkflowException.field_name)
+            exception_step_object:CACAO_1_1_Step_Object = self.get_object(exception_step)
+            if exception_step_object is None:
+                raise self.AutomationNotReadyException(f"Exception step '{exception_step}' not found", field_name=pb.Field_WorkflowException.field_name)
+            self.exception_step_ = exception_step_object.Automation(self, exception_step_object)
+            self.exception_step_.ready()
+            return self.exception_step_
+        
+        def freeze_playbook(self) -> dict:
+            """Freezes the playbook into a dictionary. Used for bpmn."""
+            
+            playbook_steps = dict()
+            
+            for page_name, obj in self.objects.items():
+                if not isinstance(obj, CACAO_1_1_Step_Object):
+                    continue
+                playbook_steps[page_name] = dict()
+                if isinstance(obj, CACAO_1_1_StartStep):
+                    playbook_steps[page_name]['type'] = CACAO_1_1_StartStep.cls_form
+                    playbook_steps[page_name]['bpmn_type'] = 'start_event'
+                elif isinstance(obj, CACAO_1_1_EndStep):
+                    playbook_steps[page_name]['type'] = CACAO_1_1_EndStep.cls_form
+                    playbook_steps[page_name]['bpmn_type'] = 'end_event'
+                elif isinstance(obj, CACAO_1_1_SingleActionStep):
+                    playbook_steps[page_name]['type'] = CACAO_1_1_SingleActionStep.cls_form
+                    playbook_steps[page_name]['bpmn_type'] = 'task'
+                elif isinstance(obj, CACAO_1_1_PlaybookStep):
+                    playbook_steps[page_name]['type'] = CACAO_1_1_PlaybookStep.cls_form
+                    playbook_steps[page_name]['bpmn_type'] = 'task'
+                elif isinstance(obj, CACAO_1_1_ParallelStep):
+                    playbook_steps[page_name]['type'] = CACAO_1_1_ParallelStep.cls_form
+                    playbook_steps[page_name]['bpmn_type'] = 'parallel_gateway'
+                elif isinstance(obj, CACAO_1_1_IfConditionStep):
+                    playbook_steps[page_name]['type'] = CACAO_1_1_IfConditionStep.cls_form
+                    playbook_steps[page_name]['bpmn_type'] = 'exclusive_gateway'
+                elif isinstance(obj, CACAO_1_1_WhileConditionStep):
+                    playbook_steps[page_name]['type'] = CACAO_1_1_WhileConditionStep.cls_form
+                    playbook_steps[page_name]['bpmn_type'] = 'exclusive_gateway'
+                elif isinstance(obj, CACAO_1_1_SwitchConditionStep):
+                    playbook_steps[page_name]['type'] = CACAO_1_1_SwitchConditionStep.cls_form
+                    playbook_steps[page_name]['bpmn_type'] = 'inclusive_gateway'
+                else:
+                    raise self.AutomationException(f"Invalid object type {obj}")
+                playbook_steps[page_name]['id'] = obj.wiki_page_name
+                playbook_steps[page_name]['name'] = obj.get_name()
+                
+                next_objects = obj.get_next_objects()
+                playbook_steps[page_name]['outgoing'] = []
+                if next_objects:
+                    for connection in next_objects['Workflow Step']:
+                        for next_step in next_objects['Workflow Step'][connection]:
+                            playbook_steps[page_name]['outgoing'].append((connection,next_step))
+                
+            return playbook_steps
+            
+        def ready(self) -> bool:
+            """Returns whether the automation is ready to be executed."""
+            try:
+                pb:CACAO_1_1_Playbook = self.playbook.get_root()
+                start_step = pb.Field_WorkflowStart.get_field(pb)
+                if start_step is None:
+                    raise self.AutomationNotReadyException("No start step defined", field_name=pb.Field_WorkflowStart.field_name)
+                start_step_object = self.get_object(start_step)
+                if start_step_object is None:
+                    raise self.AutomationNotReadyException(f"Start step '{start_step}' not found", field_name=pb.Field_WorkflowStart.field_name)
+                if not isinstance(start_step_object, CACAO_1_1_StartStep):
+                    raise self.AutomationNotReadyException(f"Start step '{start_step}' is not a Start Step", field_name=pb.Field_WorkflowStart.field_name)
+                self.start_step = start_step_object.Automation(self, start_step_object)
+                self.start_step.ready()
+                
+                for variable in pb.Field_PlaybookVariables.get_field(pb, default=[]):
+                    variable_object:CACAO_1_1_Variable = self.get_object(variable)
+                    if variable_object is None:
+                        raise self.AutomationNotReadyException(f"Variable '{variable}' not found", field_name=pb.Field_Variables.field_name)
+                    variable_object:CACAO_1_1_Variable.Automation = variable_object.Automation(self, variable_object)
+                    variable_object.ready()
+                
+            except self.AutomationNotReadyException as e:
+                self.ready_error(e)
+            if self.ready_errors:
+                return False
+            return True
+        
+        def get_context(self) -> dict:
+            """Returns the context dictionary for the automation."""
+            context = {
+                'hive_case_id': None,
+                'hive_case_name': None,
+                'workflow_vars': {},
+                'step_vars': {},
+                'global_vars': {},
+            }
+            
+            
+            pb:CACAO_1_1_Playbook = self.playbook.get_root()
+            for variable in pb.Field_PlaybookVariables.get_field(pb, default=[]):
+                variable_object:CACAO_1_1_Variable = self.get_object(variable)
+                if variable_object is None:
+                    raise self.AutomationNotReadyException(f"Variable '{variable}' not found", field_name=pb.Field_Variables.field_name)
+                variable_object = variable_object.Automation(self, variable_object)
+                var_context = variable_object.get_context()
+                context["workflow_vars"][var_context['var_id']] = var_context
+            
+            steps = [step for step in self.objects.values() if isinstance(step, CACAO_1_1_Step_Object)]
+            for step in steps:
+                step_vars = []
+                for variable in step.Field_Step_Variables.get_field(pb, default=[]):
+                    variable_object:CACAO_1_1_Variable = self.get_object(variable)
+                    variable_object = variable_object.Automation(self, variable_object)
+                    step_vars.append(variable_object.get_context())
+                if step_vars:
+                    context["step_vars"][step.wiki_page_name] = {
+                        step_var['var_id']: step_var for step_var in step_vars
+                    }
+            return context
+        
+        @classmethod
+        def get_bpmn(cls, automation_instance:'Automation_Instance') -> Tuple[str, List[str]]:
+            bpmn_xml, error_list = sasp.bpmn_util.generate_bpmn_cacao_1_1_automation(automation_instance)
+            # try:
+            #     bpmn_xml, error_list = sasp.bpmn_util.generate_bpmn_cacao_1_1_automation(automation_instance)
+            # except Exception as e:
+            #     logger.error(f"Error generating BPMN for automation {automation_instance.pk}: {e}")
+            #     error_list = [_("An unexpected error occured during BPMN generation")]
+            #     bpmn_xml = ""
+            return bpmn_xml, error_list
+                
+        
+        @classmethod
+        def execute(cls, playbook:'CACAO_1_1', context:dict, *args, user=None, **kwargs) -> Automation_Instance:
+            """Executes the Playbook."""
+            automation = cls(playbook)
+            if not automation.ready():
+                raise automation.AutomationException("Attempted to execute invalid playbook.")
+            
+            automation.context = context
+            automation.db_object = Automation_Instance()
+            automation.db_object.initialize(
+                playbook=playbook,
+                playbook_frozen=automation.freeze_playbook(),
+                case_id=context.get('hive_case_id'),
+                case_name=context.get('hive_case_name'),
+            )
+            if user and context.get('hive_case_id'):
+                automation.hive = hive_cortex_api.Hive.HiveAPI(user)
+                automation.case_id = context['hive_case_id']
+            
+            def thread_target(automation: 'CACAO_1_1.Automation'):
+                db_obj = Automation_Instance.objects.get(pk=automation.db_object.pk)
+                db_obj.status = Automation_Instance.Status.RUNNING.value
+                db_obj.save()
+                try:
+                    automation.start_step.initialize(automation.context['workflow_vars'])
+                    automation.start_step.execute()
+                    db_obj = db_obj.complete(status=Automation_Instance.Status.COMPLETED)
+                except Exception as e:
+                    db_obj = db_obj.complete(status=Automation_Instance.Status.ERROR)
+                pass
+            
+            Thread(target=thread_target, args=(automation,)).start()
+            # thread_target(automation)
+            
+            return automation.db_object
+        
+        @classmethod
+        def supported(cls) -> bool:
+            """Returns whether the automation is supported by the current environment."""
+            return True
     class Deserializer(Playbook.Deserializer):
         class DeserializationException(Playbook.Deserializer.DeserializationException):
             pass
@@ -289,6 +509,13 @@ class CACAO_1_1(Playbook):
     @classmethod
     def get_root_class(cls):
         return CACAO_1_1_Playbook
+    
+    def get_object(self, wiki_page_name):
+        object_ = self.playbook_objects.filter(wiki_page_name=wiki_page_name).first()
+        if object_ is None:
+            return None
+        else:
+            return object_.resolve_subclass()
     
     def register_object(self, new_object):
         root:CACAO_1_1_Playbook = self.get_root()
@@ -2469,6 +2696,81 @@ class CACAO_1_1_PlaybookObject(Playbook_Object):
         super().__init__(*args, **kwargs)
         self.wiki_form = self.cls_form
     
+    class Automation:
+        automation:'CACAO_1_1.Automation'
+        class Status(enum.Enum):
+            INITIALIZED = "Initialized"
+            RUNNING = "Running"
+            FAILED = "Failed"
+            SUCCEEDED = "Succeeded"
+            ACTIVE = "Active"
+        
+        def __init__(self, automation:CACAO_1_1.Automation, playbook_object:'CACAO_1_1_PlaybookObject') -> None:
+            self.automation = automation
+            self.object = playbook_object
+            self.playbook:CACAO_1_1 = automation.playbook
+            
+            self.id = None
+            self.context = None
+            self.status_ = None
+            self.messages = None
+            self.result = None
+            self.error = None
+        
+        @property
+        def status(self):
+            return self.status_
+        @status.setter
+        def status(self, value):
+            self.status_ = value
+            self.automation.objects_state_cache[self.object.wiki_page_name] = value.value
+        
+        def initialize(self, context:dict):
+            self.id = f"{self.object.cls_label} - {self.object.wiki_page_name} - {self.automation.generate_id()}"
+            self.context = context.copy()
+            self.status = self.Status.INITIALIZED
+            self.messages = []
+            self.result = None
+            self.error = None
+            
+            self.log(f"Initialized automation {self.id}")
+            return self
+        
+        class Log_Level(enum.Enum):
+            INFO = "info"
+            WARNING = "warning"
+            ERROR = "error"
+        
+        def log(self, message:str, level:Log_Level=Log_Level.INFO):
+            self.messages.append({
+                'level': level.value,
+                'message': message,
+                'timestamp': datetime.now(dt_timezone.utc).isoformat(),
+            })
+            self.automation.db_object = self.automation.db_object.update_output(
+                self.output(), 
+                objects_state = self.automation.objects_state_cache
+            )
+        
+        def output(self):
+            return {
+                'id': self.id,
+                'context': self.context,
+                'status': self.status.value,
+                'messages': self.messages,
+                'result': self.result,
+                'error': self.error,
+            }
+        
+        
+        def ready(self):
+            raise NotImplementedError("ready not implemented")
+        
+        def get_context(self):
+            raise NotImplementedError("get_context not implemented")
+        
+        def execute(self):
+            raise NotImplementedError("execute not implemented")
     
     @classmethod
     def get_priority(cls):
@@ -2601,6 +2903,10 @@ class CACAO_1_1_PlaybookObject(Playbook_Object):
         """
         if wiki is None:
             wiki=sasp.wiki_interface.Wiki()
+        if not wiki.connected:
+            # Wiki is not connected, do not write to wiki
+            return
+        
         context = {
             'content' : {}, # field_name: value
             'tables' : [], # {'caption': str, 'headers': [str], 'rows': [[str]]}
@@ -3290,8 +3596,134 @@ class CACAO_1_1_Playbook(CACAO_1_1_PlaybookObject):
 
 class CACAO_1_1_Step_Object(CACAO_1_1_PlaybookObject):
     priority:int = 100
+    help_text:str = _("The amount of time in milliseconds that this step MUST wait before considering the step has failed.")
     class Meta:
         proxy = True
+        
+    class Automation(CACAO_1_1_PlaybookObject.Automation):
+        object:'CACAO_1_1_Step_Object'
+        def ready(self):
+            if self.object.wiki_page_name in self.automation.marked_ready:
+                return
+            self.automation.marked_ready.add(self.object.wiki_page_name)
+            self.on_success = None
+            self.on_failure = None
+            self.on_completion = None
+            # Make sure Variables are correct
+            for variable in self.object.Field_Step_Variables.get_field(self.object, default=[]):
+                    variable_object:CACAO_1_1_Variable = self.automation.get_object(variable)
+                    if variable_object is None:
+                        raise self.automation.AutomationNotReadyException(
+                            f"Variable '{variable}' not found", 
+                            field_name=self.object.Field_Step_Variables.field_name,
+                            traceback=f"{self.object.wiki_page_name} - {self.object.Field_Step_Variables.field_name}"
+                        )
+                    variable_object = variable_object.Automation(self, variable_object)
+                    variable_object.ready()
+            
+            on_completion=self.object.Field_On_Completion.get_field(self.object)
+            on_success=self.object.Field_On_Success.get_field(self.object)
+            on_failure=self.object.Field_On_Failure.get_field(self.object)
+            if not isinstance(self.object, CACAO_1_1_EndStep):
+                # Assert next steps exist
+                if on_completion:
+                    # If on_completion exists, on_success and on_failure must not exist
+                    if (on_success or on_failure):
+                        self.automation.ready_error(
+                            self.automation.AutomationNotReadyException(
+                                "On completion and (on_success, on_failure) are mutually exclusive",
+                                field_name=self.object.Field_On_Completion.field_name,
+                                traceback=f"{self.object.wiki_page_name} - {self.object.Field_On_Completion.field_name}"
+                            )
+                        )
+                    # Assert step exists
+                    on_completion_object = self.automation.get_object(on_completion)
+                    if not on_completion_object:
+                        raise self.automation.AutomationNotReadyException(
+                            "On completion step does not exist",
+                            field_name=self.object.Field_On_Completion.field_name,
+                            traceback=f"{self.object.wiki_page_name} - {self.object.Field_On_Completion.field_name}"
+                        )
+                    self.on_completion = on_completion_object.Automation(self.automation, on_completion_object)
+                    self.on_completion.ready()
+                elif on_success or on_failure:
+                    # Both must exist
+                    if not on_success:
+                        raise self.automation.AutomationNotReadyException(
+                            "On success required if on failure defined",
+                            field_name=self.object.Field_On_Success.field_name,
+                            traceback=f"{self.object.wiki_page_name} - {self.object.Field_On_Success.field_name}"
+                        )
+                    if not on_failure:
+                        raise self.automation.AutomationNotReadyException(
+                            "On failure required if on success defined",
+                            field_name=self.object.Field_On_Failure.field_name,
+                            traceback=f"{self.object.wiki_page_name} - {self.object.Field_On_Failure.field_name}"
+                        )
+                    # Assert steps exist
+                    on_success_object = self.automation.get_object(on_success)
+                    on_failure_object = self.automation.get_object(on_failure)
+                    if not on_success_object:
+                        raise self.automation.AutomationNotReadyException(
+                            f"On success step '{on_success}' does not exist",
+                            field_name=self.object.Field_On_Success.field_name,
+                            traceback=f"{self.object.wiki_page_name} - {self.object.Field_On_Success.field_name}"
+                        )
+                    if not on_failure_object:
+                        raise self.automation.AutomationNotReadyException(
+                            f"On failure step '{on_failure}' does not exist",
+                            field_name=self.object.Field_On_Failure.field_name,
+                            traceback=f"{self.object.wiki_page_name} - {self.object.Field_On_Failure.field_name}"
+                        )
+                    self.on_success = on_success_object.Automation(self.automation, on_success_object)
+                    self.on_failure = on_failure_object.Automation(self.automation, on_failure_object)
+                    self.on_success.ready()
+                    self.on_failure.ready()
+            else:
+                # End steps are not allowed to have next steps
+                if any([on_completion,on_failure,on_success]):
+                    self.automation.ready_error(
+                        self.automation.AutomationNotReadyException(
+                            "End steps are not allowed to have next steps",
+                            traceback=f"{self.object.wiki_page_name}"
+                        )
+                    )
+        
+        def update_context(self):
+            new_context = self.context.copy()
+            for var_id in self.automation.context['step_vars'].get(self.object.wiki_page_name, {}):
+                new_context[var_id] = self.automation.context[self.object.wiki_page_name][var_id]
+            for var_id in self.automation.context['global_vars']:
+                new_context[var_id] = self.automation.context['global_vars'][var_id]
+            return new_context
+        
+        def run_actions(self, context:dict):
+            pass
+        
+        def execute(self):
+            self.status = self.Status.RUNNING
+            self.log("Running")
+            try:
+                self.run_actions(self.update_context())
+                self.status = self.Status.SUCCEEDED
+            except Exception as e:
+                self.status = self.Status.FAILED
+                self.error = traceback.format_exc()
+            
+            if self.status == self.Status.SUCCEEDED:
+                next_step = self.object.Field_On_Completion.get_field(self.object) or self.object.Field_On_Success.get_field(self.object)
+            else:
+                next_step = self.object.Field_On_Failure.get_field(self.object) or self.automation.exception_step.object.wiki_page_name
+            self.automation.objects_state_cache[f"{self.object.wiki_page_name}_{next_step}"] = "Walked"
+            next_step:CACAO_1_1_Step_Object = self.automation.get_object(next_step)
+            next_step_auto:CACAO_1_1_Step_Object.Automation = next_step.Automation(self.automation, next_step).initialize(self.context)
+            self.result = next_step_auto.id
+            if self.status == self.Status.SUCCEEDED:
+                self.log(f"Completed. Next: {next_step_auto.id}")
+            else:
+                self.log(f"Failed. Next: {next_step_auto.id}", level=self.Log_Level.WARNING)
+            next_step_auto.execute()
+            
     
     class Field_Type(CACAO_1_1_PlaybookObject.Abstract_Field_Type):
         field_type = FT.string
@@ -3585,7 +4017,13 @@ class CACAO_1_1_EndStep(CACAO_1_1_Step_Object):
     cls_label = "End Step"
     class Meta:
         proxy = True
-    
+    class Automation(CACAO_1_1_Step_Object.Automation):
+        object:'CACAO_1_1_SingleActionStep'
+        
+        def execute(self):
+            self.status = self.Status.SUCCEEDED # End steps are always successful
+            self.log("End of branch")
+        
     class Field_Type(CACAO_1_1_Step_Object.Field_Type):
         field_type = FT.string
         required = True
@@ -3628,6 +4066,97 @@ class CACAO_1_1_SingleActionStep(CACAO_1_1_Step_Object):
     cls_label = "Single Action Step"
     class Meta:
         proxy = True
+    
+    class Automation(CACAO_1_1_Step_Object.Automation):
+        object:'CACAO_1_1_SingleActionStep'
+        
+        def run_actions(self, context: dict):
+            targets = CACAO_1_1_SingleActionStep.Field_Target_Ids.get_field(self.object, default=[])
+            if CACAO_1_1_SingleActionStep.Field_Target.get_field(self.object):
+                targets.append(CACAO_1_1_SingleActionStep.Field_Target.get_field(self.object))
+            targets = [self.automation.get_object(target) for target in targets]
+            commands = CACAO_1_1_SingleActionStep.Field_Commands.get_field(self.object)
+            commands: List[CACAO_1_1_Command] = [self.automation.get_object(command) for command in commands]
+            if self.object.Field_Timeout.get_field(self.object):
+                timeout = timezone.now().timestamp() + self.object.Field_Timeout.get_field(self.object) / 1000
+            else:
+                timeout = None
+            self.status = self.Status.ACTIVE
+            for command in commands:
+                if timeout and timezone.now().timestamp() > timeout:
+                    raise self.automation.AutomationTimeoutException(
+                        "Step timed out",
+                        traceback=f"{self.object.wiki_page_name} - {command.wiki_page_name}"
+                    )
+                cmd_auto = command.Automation(self.automation, command).initialize(context, targets=targets, timeout=timeout)
+                self.log(f"Running command: {cmd_auto.id}")
+                cmd_auto.execute()
+        
+        def execute(self):
+            return super().execute()
+        
+        def ready(self):
+            super().ready()
+            
+            if self.on_completion:
+                if not self.automation.exception_step:
+                    raise self.automation.AutomationNotReadyException(
+                        "Single action step must either use on failure, or the workflow needs an exception step",
+                        traceback=f"{self.object.wiki_page_name} - {self.object.Field_On_Completion.field_name}"
+                    )
+            
+            commands = []
+            for command in CACAO_1_1_SingleActionStep.Field_Commands.get_field(self.object):
+                command_object = self.automation.get_object(command)
+                if not command_object:
+                    raise self.automation.AutomationNotReadyException(
+                        f"Command '{command}' does not exist",
+                        field_name=self.object.Field_Commands.field_name,
+                        traceback=f"{self.object.wiki_page_name} - {self.object.Field_Commands.field_name}"
+                    )
+                command_object = command_object.Automation(self.automation, command_object)
+                command_object.ready()
+                commands.append(command_object)
+            
+            targets = []
+            for target in CACAO_1_1_SingleActionStep.Field_Target_Ids.get_field(self.object, default=[]):
+                target_object:CACAO_1_1_Target = self.automation.get_object(target)
+                if not target_object:
+                    raise self.automation.AutomationNotReadyException(
+                        f"Target '{target}' does not exist",
+                        field_name=self.object.Field_Target_Ids.field_name,
+                        traceback=f"{self.object.wiki_page_name} - {self.object.Field_Target_Ids.field_name}"
+                    )
+                target_object = target_object.Automation(self.automation, target_object)
+                target_object.ready()
+                targets.append(target_object)
+            
+            single_target = CACAO_1_1_SingleActionStep.Field_Target.get_field(self.object)
+            if single_target:
+                if targets:
+                    raise self.automation.AutomationNotReadyException(
+                        "Single target and target ids are mutually exclusive",
+                        field_name=self.object.Field_Target.field_name,
+                        traceback=f"{self.object.wiki_page_name} - {self.object.Field_Target.field_name}"
+                    )
+                single_target:CACAO_1_1_Target = self.automation.get_object(single_target)
+                if not single_target:
+                    raise self.automation.AutomationNotReadyException(
+                        f"Target '{single_target}' does not exist",
+                        field_name=self.object.Field_Target.field_name,
+                        traceback=f"{self.object.wiki_page_name} - {self.object.Field_Target.field_name}"
+                    )
+                single_target = single_target.Automation(self.automation, single_target)
+                single_target.ready()
+                targets.append(single_target)
+            
+            for command in commands:
+                if command.object.Field_Type.get_field(command.object) == "http-api":
+                    if not any(isinstance(target.object, CACAO_1_1_Target.HTTPAPITarget) for target in targets):
+                        raise self.automation.AutomationNotReadyException(
+                            "HTTP API commands require HTTP API targets",
+                            traceback=f"{self.object.wiki_page_name} - {command.object.wiki_page_name}"
+                        )
     
     class Field_Type(CACAO_1_1_Step_Object.Field_Type):
         allowed_values = ["single"]
@@ -3754,6 +4283,9 @@ class CACAO_1_1_PlaybookStep(CACAO_1_1_Step_Object):
     class Meta:
         proxy = True
     
+    class Automation(CACAO_1_1_PlaybookObject.Automation):
+        pass
+    
     class Field_Type(CACAO_1_1_Step_Object.Field_Type):
         field_type = FT.string
         required = True
@@ -3809,6 +4341,31 @@ class CACAO_1_1_ParallelStep(CACAO_1_1_Step_Object):
     class Meta:
         proxy = True
     
+    class Automation(CACAO_1_1_Step_Object.Automation):
+        object:'CACAO_1_1_ParallelStep'
+        def run_actions(self, context: dict):
+            for step in CACAO_1_1_ParallelStep.Field_Next_Steps.get_field(self.object):
+                self.automation.objects_state_cache[f"{self.object.wiki_page_name}_{step}"] = "Walked"
+                step_object:CACAO_1_1_Step_Object = self.automation.get_object(step)
+                step_auto = step_object.Automation(self.automation, step_object).initialize(context)
+                step_auto.execute()
+        def ready(self):
+            super().ready()
+            if self.object.wiki_page_name in self.automation.marked_ready:
+                return
+            self.automation.marked_ready.add(self.object.wiki_page_name)
+            
+            for paralell_step in CACAO_1_1_ParallelStep.Field_Next_Steps.get_field(self.object, default=[]):
+                paralell_step_object = self.automation.get_object(paralell_step)
+                if not paralell_step_object:
+                    raise self.automation.AutomationNotReadyException(
+                        f"Parallel step '{paralell_step}' does not exist",
+                        field_name=self.object.Field_Next_Steps.field_name,
+                        traceback=f"{self.object.wiki_page_name} - {self.object.Field_Next_Steps.field_name}"
+                    )
+                paralell_step_object = paralell_step_object.Automation(self.automation, paralell_step_object)
+                paralell_step_object.ready()
+                
     class Field_Type(CACAO_1_1_Step_Object.Field_Type):
         allowed_values = ["parallel"]
     
@@ -3873,6 +4430,74 @@ class CACAO_1_1_IfConditionStep(CACAO_1_1_Step_Object):
     cls_label = "If Condition Step"
     class Meta:
         proxy = True
+    
+    class Automation(CACAO_1_1_Step_Object.Automation):
+        object:'CACAO_1_1_IfConditionStep'
+        
+        def run_actions(self, context: dict):
+            condition = self.object.Field_Condition.get_field(self.object)
+            condition = stix_parsing.parse_if_condition(condition, context, hive_case_id=self.automation.case_id, hive_api=self.automation.hive)
+            self.log(f"Condition evaluated to: {condition}")
+            if condition:
+                next_steps = CACAO_1_1_IfConditionStep.Field_On_True.get_field(self.object)
+            else:
+                next_steps = CACAO_1_1_IfConditionStep.Field_On_False.get_field(self.object)
+            
+            for step in next_steps:
+                self.automation.objects_state_cache[f"{self.object.wiki_page_name}_{step}"] = "Walked"
+                step_object:CACAO_1_1_Step_Object = self.automation.get_object(step)
+                step_auto = step_object.Automation(self.automation, step_object).initialize(context)
+                self.log(f"Running step: {step_auto.id}")
+                step_auto.execute()
+        
+        def ready(self):
+            super().ready()
+            if self.object.wiki_page_name in self.automation.marked_ready:
+                return
+            self.automation.marked_ready.add(self.object.wiki_page_name)
+            
+            true_steps = CACAO_1_1_IfConditionStep.Field_On_True.get_field(self.object, default=[])
+            if not true_steps:
+                raise self.automation.AutomationNotReadyException(
+                    "At least one on true step is required",
+                    field_name=self.object.Field_On_True.field_name,
+                    traceback=f"{self.object.wiki_page_name} - {self.object.Field_On_True.field_name}"
+                )
+            for true_step in true_steps:
+                true_step_object = self.automation.get_object(true_step)
+                if not true_step_object:
+                    raise self.automation.AutomationNotReadyException(
+                        f"True step '{true_step}' does not exist",
+                        field_name=self.object.Field_On_True.field_name,
+                        traceback=f"{self.object.wiki_page_name} - {self.object.Field_On_True.field_name}"
+                    )
+                true_step_object = true_step_object.Automation(self.automation, true_step_object)
+                true_step_object.ready()
+                
+            false_steps = CACAO_1_1_IfConditionStep.Field_On_False.get_field(self.object, default=[])
+            if not false_steps:
+                raise self.automation.AutomationNotReadyException(
+                    "At least one on false step is required",
+                    field_name=self.object.Field_On_False.field_name,
+                    traceback=f"{self.object.wiki_page_name} - {self.object.Field_On_False.field_name}"
+                )
+            for false_step in false_steps:
+                false_step_object = self.automation.get_object(false_step)
+                if not false_step_object:
+                    raise self.automation.AutomationNotReadyException(
+                        f"False step '{false_step}' does not exist",
+                        field_name=self.object.Field_On_False.field_name,
+                        traceback=f"{self.object.wiki_page_name} - {self.object.Field_On_False.field_name}"
+                    )
+                false_step_object = false_step_object.Automation(self.automation, false_step_object)
+                false_step_object.ready()
+            
+            if self.object.Field_Condition.get_field(self.object) is None:
+                raise self.automation.AutomationNotReadyException(
+                    "Condition is required",
+                    field_name=self.object.Field_Condition.field_name,
+                    traceback=f"{self.object.wiki_page_name} - {self.object.Field_Condition.field_name}"
+                )
     class Field_Type(CACAO_1_1_Step_Object.Field_Type):
         allowed_values = ["if-condition"]
     class Field_Condition(CACAO_1_1_Step_Object.String_Field):
@@ -3979,6 +4604,75 @@ class CACAO_1_1_WhileConditionStep(CACAO_1_1_Step_Object):
     class Meta:
         proxy = True
     
+    class Automation(CACAO_1_1_Step_Object.Automation):
+        object:'CACAO_1_1_WhileConditionStep'
+        
+        def run_actions(self, context: dict):
+            condition = self.object.Field_Condition.get_field(self.object)
+            next_steps = CACAO_1_1_WhileConditionStep.Field_On_True.get_field(self.object)
+            while stix_parsing.parse_if_condition(condition, context, hive_case_id=self.automation.case_id, hive_api=self.automation.hive):
+                self.log("Condition evaluated to: True")
+                
+                for step in next_steps:
+                    self.automation.objects_state_cache[f"{self.object.wiki_page_name}_{step}"] = "Walked"
+                    step_object:CACAO_1_1_Step_Object = self.automation.get_object(step)
+                    step_auto = step_object.Automation(self.automation, step_object).initialize(context)
+                    self.log(f"Running step: {step_auto.id}")
+                    step_auto.execute()
+                context = self.update_context(context)
+            step_object:CACAO_1_1_Step_Object = self.automation.get_object(CACAO_1_1_WhileConditionStep.Field_On_False.get_field(self.object))
+            step_auto = step_object.Automation(self.automation, step_object).initialize(context)
+            self.log(f"Condition evaluated to False. Running step: {step_auto.id}")
+            step_auto.execute()
+        
+        def ready(self):
+            super().ready()
+            if self.object.wiki_page_name in self.automation.marked_ready:
+                return
+            self.automation.marked_ready.add(self.object.wiki_page_name)
+            
+            true_steps = CACAO_1_1_WhileConditionStep.Field_On_True.get_field(self.object, default=[])
+            if not true_steps:
+                raise self.automation.AutomationNotReadyException(
+                    "At least one on true step is required",
+                    field_name=self.object.Field_On_True.field_name,
+                    traceback=f"{self.object.wiki_page_name} - {self.object.Field_On_True.field_name}"
+                )
+            for true_step in true_steps:
+                true_step_object = self.automation.get_object(true_step)
+                if not true_step_object:
+                    raise self.automation.AutomationNotReadyException(
+                        f"True step '{true_step}' does not exist",
+                        field_name=self.object.Field_On_True.field_name,
+                        traceback=f"{self.object.wiki_page_name} - {self.object.Field_On_True.field_name}"
+                    )
+                true_step_object = true_step_object.Automation(self.automation, true_step_object)
+                true_step_object.ready()
+                
+            false_step = CACAO_1_1_WhileConditionStep.Field_On_False.get_field(self.object)
+            if not false_step:
+                raise self.automation.AutomationNotReadyException(
+                    "A false step is required",
+                    field_name=self.object.Field_On_False.field_name,
+                    traceback=f"{self.object.wiki_page_name} - {self.object.Field_On_False.field_name}"
+                )
+            false_step_object = self.automation.get_object(false_step)
+            if not false_step_object:
+                raise self.automation.AutomationNotReadyException(
+                    f"False step '{false_step}' does not exist",
+                    field_name=self.object.Field_On_False.field_name,
+                    traceback=f"{self.object.wiki_page_name} - {self.object.Field_On_False.field_name}"
+                )
+            false_step_object = false_step_object.Automation(self.automation, false_step_object)
+            false_step_object.ready()
+            
+            if self.object.Field_Condition.get_field(self.object) is None:
+                raise self.automation.AutomationNotReadyException(
+                    "Condition is required",
+                    field_name=self.object.Field_Condition.field_name,
+                    traceback=f"{self.object.wiki_page_name} - {self.object.Field_Condition.field_name}"
+                )
+    
     class Field_Type(CACAO_1_1_Step_Object.Field_Type):
         allowed_values = ["while-condition"]
     class Field_Condition(CACAO_1_1_IfConditionStep.Field_Condition):
@@ -4057,6 +4751,66 @@ class CACAO_1_1_SwitchConditionStep(CACAO_1_1_Step_Object):
     #   This just doesn't work with our current model, so we have to do some weird stuff.
     class Meta:
         proxy = True
+    
+    class Automation(CACAO_1_1_Step_Object.Automation):
+        object:'CACAO_1_1_SwitchConditionStep'
+        
+        def run_actions(self, context: dict):
+            switch_id = self.object.Field_Switch.get_field(self.object)
+            switch = context.get(switch_id)
+            cases = self.object.Field_Cases.get_field(self.object)
+            if switch is None:
+                if 'default' in cases:
+                    self.log("Running switch: default")
+                    next_steps = CACAO_1_1_SwitchConditionStep.Field_Cases.get_field(self.object)['default']
+                else:
+                    raise self.automation.AutomationException(
+                        f"Switch '{switch_id}' is not defined",
+                        field_name=self.object.Field_Switch.field_name,
+                        traceback=f"{self.object.wiki_page_name} - {self.object.Field_Switch.field_name}"
+                    )
+            else:
+                self.log(f"Running switch: {switch['var_id']}")
+                next_steps = CACAO_1_1_SwitchConditionStep.Field_Cases.get_field(self.object)[switch['var_value']]
+            
+            for step in next_steps:
+                self.automation.objects_state_cache[f"{self.object.wiki_page_name}_{step}"] = "Walked"
+                step_object:CACAO_1_1_Step_Object = self.automation.get_object(step)
+                step_auto = step_object.Automation(self.automation, step_object).initialize(context)
+                self.log(f"Running step: {step_auto.id}")
+                step_auto.execute()
+        
+        def ready(self):
+            super().ready()
+            if self.object.wiki_page_name in self.automation.marked_ready:
+                return
+            self.automation.marked_ready.add(self.object.wiki_page_name)
+            
+            cases = CACAO_1_1_SwitchConditionStep.Field_Cases.get_field(self.object, default=dict())
+            if not cases:
+                raise self.automation.AutomationNotReadyException(
+                    "A case dict is required",
+                    field_name=self.object.Field_Cases.field_name,
+                    traceback=f"{self.object.wiki_page_name} - {self.object.Field_Cases.field_name}"
+                )
+            for case_list in cases.values():
+                for case in case_list:
+                    case_object = self.automation.get_object(case)
+                    if not case_object:
+                        raise self.automation.AutomationNotReadyException(
+                            f"Case '{case}' does not exist",
+                            field_name=self.object.Field_Cases.field_name,
+                            traceback=f"{self.object.wiki_page_name} - {self.object.Field_Cases.field_name}"
+                        )
+                    true_step_object = case_object.Automation(self.automation, case_object)
+                    true_step_object.ready()
+                
+            if self.object.Field_Switch.get_field(self.object) is None:
+                raise self.automation.AutomationNotReadyException(
+                    "Switch is required",
+                    field_name=self.object.Field_Switch.field_name,
+                    traceback=f"{self.object.wiki_page_name} - {self.object.Field_Switch.field_name}"
+                )
     
     class Field_Type(CACAO_1_1_Step_Object.Field_Type):
         allowed_values = ["switch-condition"]
@@ -4189,6 +4943,240 @@ class CACAO_1_1_Command(CACAO_1_1_PlaybookObject):
     class Meta:
         proxy = True
     
+    class Automation(CACAO_1_1_PlaybookObject.Automation):
+        object:'CACAO_1_1_Command'
+        supported_types = ["manual", "http-api", "openc2-json"]
+        
+        def __init__(self, automation: CACAO_1_1.Automation, playbook_object: CACAO_1_1_PlaybookObject) -> None:
+            self.targets = None
+            self.timeout = None
+            self.instruction = None
+            super().__init__(automation, playbook_object)
+        
+        def initialize(self, context: dict, targets: List['CACAO_1_1_Target']=[], timeout:float=None):
+            self.targets = targets
+            self.timeout = timeout
+            if self.object.Field_Command.get_field(self.object):
+                self.instruction = self.object.Field_Command.get_field(self.object)
+            else:
+                self.instruction = base64.b64decode(self.object.Field_Command_B64.get_field(self.object))
+            return super().initialize(context)
+        
+        def output(self):
+            out_dict = super().output()
+            out_dict['command'] = self.instruction
+            out_dict['timeout'] = self.timeout
+            return out_dict
+        
+        def _manual_command(self):
+            confirmation_request = dict()
+            confirmation_request['approved'] = False
+            confirmation_request['abort'] = False
+            confirmation_request['title'] = f"Manual command {self.object.wiki_page_name} - {self.id}"
+            confirmation_request['message'] = "Please execute the command manually and confirm when done."
+            confirmation_request['data'] = {
+                "instruction": self.instruction,
+                "targets": self.targets
+            }
+            if self.timeout:
+                confirmation_request['timeout'] = str(datetime.fromtimestamp(self.timeout, tz=dt_timezone.utc))
+            else:
+                confirmation_request['timeout'] = None
+            confirmation_request['timestamp'] = str(timezone.now())
+            cmd_uuid = self.automation.db_object.register_confirmation_request(confirmation_request)
+            while True:
+                time.sleep(1)
+                confirmation_request = self.automation.db_object.get_confirmation_request(cmd_uuid)
+                if confirmation_request['approved']:
+                    break
+                if confirmation_request['abort']:
+                    raise self.automation.AutomationExecutionException("Command aborted")
+                if self.timeout and timezone.now().timestamp() > self.timeout:
+                    self.automation.db_object.abort_confirmation_request(cmd_uuid)
+                    raise self.automation.AutomationExecutionException("Command timed out")
+            self.result = confirmation_request
+            # self.automation.db_object.remove_confirmation_request(cmd_uuid)
+        
+        def _http_api_command(self):
+            if self.timeout and timezone.now().timestamp() > self.timeout:
+                raise self.automation.AutomationTimeoutException(
+                    "Step timed out",
+                    traceback=f"{self.object.wiki_page_name} - {self.object.Field_Command.field_name}"
+                )
+            
+            if self.timeout:
+                timeout = timezone.now().timestamp() - self.timeout
+            else:
+                timeout = None
+            try:
+                resp = requests.get(self.instruction, timeout=timeout)
+                resp.raise_for_status()
+                self.result = resp.json()
+            except requests.exceptions.Timeout:
+                raise self.automation.AutomationTimeoutException(
+                    "Command timed out",
+                    traceback=f"{self.object.wiki_page_name} - {self.object.Field_Command.field_name}"
+                )
+            except requests.exceptions.HTTPError as e:
+                raise self.automation.AutomationExecutionException(
+                    f"Command failed: {e}",
+                    traceback=f"{self.object.wiki_page_name} - {self.object.Field_Command.field_name}"
+                )
+        
+        def _openc_json_command(self):
+            instruction = json.loads(self.instruction)
+            if instruction["action"] == "start":
+                analyzer_id = None
+                responder_id = None
+                for analyzer in self.automation.hive.get_analyzers():
+                    if analyzer["name"] == instruction["target"]["uri"]:
+                        analyzer_id = analyzer["id"]
+                        break
+                else:
+                    for responder in self.automation.hive.get_responders(case_id=self.automation.case_id):
+                        if responder["name"] == instruction["target"]["uri"]:
+                            responder_id = responder["id"]
+                            break
+                if not analyzer_id and not responder_id:
+                    raise self.automation.AutomationExecutionException(
+                        f"Analyzer/Responder not found: {instruction['target']['uri']}",
+                        traceback=f"{self.object.wiki_page_name} - {self.object.Field_Command.field_name}"
+                    )
+
+                if analyzer_id:
+                    artifact_id = stix_parsing.get_variable_value(
+                        instruction["args"]["observable"], 
+                        self.context, 
+                        hive_case_id=self.automation.case_id,
+                        hive_api=self.automation.hive
+                    )
+                    artifact_id = artifact_id[0]["_id"]
+                    if not artifact_id:
+                        raise self.automation.AutomationExecutionException(
+                            f"Artifact not found: {instruction['args']['observable']}",
+                            traceback=f"{self.object.wiki_page_name} - {self.object.Field_Command.field_name}"
+                        )
+                    
+                    result = self.automation.hive.run_analyzer(artifact_id=artifact_id, analyzer_id=analyzer_id)
+                    job_id = result["id"]
+                else:
+                    responder_data = instruction.get("args",{}).get("cortex_args",{})
+                    def parse_vars(data):
+                        for key in data:
+                            if isinstance(data[key], str):
+                                try:
+                                    data[key] = stix_parsing.get_variable_value(
+                                        data[key], 
+                                        self.context, 
+                                        hive_case_id=self.automation.case_id,
+                                        hive_api=self.automation.hive
+                                    )[0]
+                                except Exception:
+                                    pass
+                            elif isinstance(data[key], dict):
+                                parse_vars(data[key])
+                    parse_vars(responder_data)
+                    result = self.automation.hive.run_responder(
+                        case_id=self.automation.case_id,
+                        responder_idOrName=responder_id,
+                        data=responder_data
+                        )
+                    job_id = result['cortexJobId']
+                
+                
+                # Wait for the Job to finish
+                
+                while True:
+                    if analyzer_id:
+                        job = self.automation.hive.get_analyzer_job(job_id=job_id)
+                    else:
+                        job = self.automation.hive.get_responder_job(job_id=job_id, case_id=self.automation.case_id)
+                    
+                    if job.get('status') in {"Success","Failure","Deleted"}:
+                        break
+                    if self.timeout and timezone.now().timestamp() > self.timeout:
+                        raise self.automation.AutomationTimeoutException(
+                            "Step timed out",
+                            traceback=f"{self.object.wiki_page_name} - {self.object.Field_Command.field_name}"
+                        )
+                    time.sleep(1)
+                
+                self.result = job.get('report')
+                if job['status'] == "Failure":
+                    raise self.automation.AutomationExecutionException(
+                        "Command failed on Cortex.",
+                        traceback=f"{self.object.wiki_page_name} - {self.object.Field_Command.field_name}"
+                    )
+                elif job['status'] == "Deleted":
+                    raise self.automation.AutomationExecutionException(
+                        "Command failed. Cortex job was deleted.",
+                        traceback=f"{self.object.wiki_page_name} - {self.object.Field_Command.field_name}"
+                    )
+                elif job['status'] == "Success":
+                    pass
+                else:
+                    raise self.automation.AutomationExecutionException(
+                        f"Command terminated with unknown status. Status: {job['status']}",
+                        traceback=f"{self.object.wiki_page_name} - {self.object.Field_Command.field_name}"
+                    )
+        
+        def execute(self):
+            self.status = self.Status.RUNNING
+            self.log("Running")
+            try:
+                match self.object.Field_Type.get_field(self.object):
+                    case "manual":
+                        self._manual_command()
+                    case "http-api":
+                        self._http_api_command()
+                    case "openc2-json":
+                        self._openc_json_command()
+                    case _:
+                        raise self.automation.AutomationException(
+                            f"Unsupported command type '{self.object.Field_Type.get_field(self.object)}'",
+                            field_name=self.object.Field_Type.field_name,
+                            traceback=f"{self.object.wiki_page_name} - {self.object.Field_Type.field_name}"
+                        )
+                self.status = self.Status.SUCCEEDED
+            except Exception as e:
+                self.status = self.Status.FAILED
+                self.error = traceback.format_exc()
+                self.log(f"Failed: {e}", level=self.Log_Level.ERROR)
+                raise e
+            
+            self.log("Completed.")
+            
+        def ready(self):
+            if self.object.wiki_page_name in self.automation.marked_ready:
+                return
+            self.automation.marked_ready.add(self.object.wiki_page_name)
+            
+            if self.object.Field_Type.get_field(self.object) not in self.supported_types:
+                raise self.automation.AutomationNotReadyException(
+                    f"Command type must be one of {', '.join(self.supported_types)}",
+                    field_name=self.object.Field_Type.field_name,
+                    traceback=f"{self.object.wiki_page_name} - {self.object.Field_Type.field_name}"
+                )
+            
+            command = self.object.Field_Command.get_field(self.object)
+            command_b64 = self.object.Field_Command_B64.get_field(self.object)
+            if not command and not command_b64:
+                raise self.automation.AutomationNotReadyException(
+                    "Either a command or a command b64 is required",
+                    field_name=self.object.Field_Command.field_name,
+                    traceback=f"{self.object.wiki_page_name} - {self.object.Field_Command.field_name}"
+                )
+            
+            if command_b64:
+                try:
+                    base64.b64decode(command_b64)
+                except Exception as e:
+                    raise self.automation.AutomationNotReadyException(
+                        f"Command b64 is not valid base64 ({e})",
+                        field_name=self.object.Field_Command_B64.field_name,
+                        traceback=f"{self.object.wiki_page_name} - {self.object.Field_Command_B64.field_name}"
+                    )
+    
     class Field_Type(CACAO_1_1_PlaybookObject.Abstract_Field_Type):
         allowed_values = [
             "manual",
@@ -4242,6 +5230,14 @@ class CACAO_1_1_Command(CACAO_1_1_PlaybookObject):
 class CACAO_1_1_Target(CACAO_1_1_PlaybookObject):
     class Meta:
         proxy = True
+    
+    class Automation(CACAO_1_1_PlaybookObject.Automation):
+        object:'CACAO_1_1_Target'
+        def ready(self):
+            if self.object.wiki_page_name in self.automation.marked_ready:
+                return
+            self.automation.marked_ready.add(self.object.wiki_page_name)
+            
     class Field_Type(CACAO_1_1_PlaybookObject.Abstract_Field_Type):
         pass
     class Field_Name(CACAO_1_1_PlaybookObject.String_Field):
@@ -5546,7 +6542,32 @@ class CACAO_1_1_Variable(CACAO_1_1_PlaybookObject):
     cls_label = "Variable"
     class Meta:
         proxy = True
-    
+    class Automation(CACAO_1_1_PlaybookObject.Automation):
+        object:'CACAO_1_1_Variable'
+        def ready(self):
+            if self.object.wiki_page_name in self.automation.marked_ready:
+                return
+            self.automation.marked_ready.add(self.object.wiki_page_name)
+            
+            value = self.object.Field_Value.get_field(self.object)
+            if value:
+                try:
+                    json.loads(value)
+                except json.JSONDecodeError:
+                    self.automation.ready_error(
+                        self.automation.AutomationNotReadyException(
+                            "Variable value must be a valid JSON string",
+                            field_name=self.object.Field_Value.field_name,
+                            traceback=f"{self.object.wiki_page_name} - {self.object.Field_Value.field_name}"
+                        )
+                    )
+        def get_context(self):
+            return {
+                "var_id": self.object.get_cacao_id(),
+                "var_type": self.object.Field_Type.get_field(self.object),
+                "var_value": json.loads(self.object.Field_Value.get_field(self.object)),
+                "var_constant": self.object.Field_Constant.get_field(self.object, default=False),
+            }
     class Field_Type(CACAO_1_1_PlaybookObject.Abstract_Field_Type):
         allowed_values = [
             'string',

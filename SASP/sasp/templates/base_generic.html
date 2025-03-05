@@ -10,7 +10,7 @@
     {% include "js/bootstrap.html" %}
     {% block extra_head %}
 
-    {% endblock %}
+    {% endblock extra_head %}
     <!-- Add additional CSS in static file -->
     <!-- Custom CSS -->
      {% load static %}
@@ -125,7 +125,7 @@
         </div>
       </div>
       <div class="row">
-        <div class="col-md-2">
+        <div class="col-md-2" id="section-sidebar">
           {% block sidebar %}
             <nav class="navbar-nav-scroll mw-100 sticky-top pe-2" style="--bs-scroll-height: 100vh;">
               <ul class="sidebar-nav navbar-nav mr-auto">
@@ -138,12 +138,12 @@
         </div>
         <div class="col-md-9">
           {% load django_bootstrap5 %}
-          <div class="row">
+          <div class="row" id="section-bs-messages">
             <div class="col-md-12">
               {% bootstrap_messages %}
             </div>
           </div>
-          <div class="row">
+          <div class="row" id="section-dj-messages">
             {% block messages %}
               <div class="col-md-12">
                 {% for info in messages.info %}
@@ -167,7 +167,7 @@
               </div>
             {% endblock %}
           </div>
-          <div class="row">
+          <div class="row" id="section-content">
             {% block content %}
               <div class="col-md-12">
                 <h1>NO CONTENT DEFINED</h1>
@@ -193,6 +193,6 @@
     </script>
     {% block extra_js %}
 
-    {% endblock %}
+    {% endblock extra_js %}
   </body>
 </html>

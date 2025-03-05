@@ -1,0 +1,64 @@
+{
+    "type": "playbook",
+    "spec_version": "1.1",
+    "id": "playbook--93abbe83-a306-4b36-9784-bc8d5b807bdd",
+    "name": "Automated Actions Playbook",
+    "playbook_types": [
+        "investigation"
+    ],
+    "created_by": "identity--93abbe83-a306-4b36-9784-bc8d5b807bdd",
+    "created": "2024-07-10T12:34:00Z",
+    "modified": "2024-07-10T12:34:00Z",
+    "playbook_variables": {
+        "$$var_int$$": {
+            "type": "integer",
+            "value": "10",
+            "constant": true
+        }
+    },
+    "workflow_start": "step--9764b248-9934-40db-afa5-579774e7738c",
+    "workflow_exception": "step--2a9aabd2-f85a-4aad-8be7-ac3fd121d730",
+    "workflow": {
+        "step--9764b248-9934-40db-afa5-579774e7738c": {
+            "type": "start",
+            "name": "start - case arrives",
+            "on_completion": "step--010fdf2a-9650-49a5-8ad0-a2bb10b37a5b"
+        },
+        "step--2a9aabd2-f85a-4aad-8be7-ac3fd121d730": {
+            "type": "end",
+            "name": "end - Process exception"
+        },
+        "step--94238688-98ac-4fd3-a62e-4c5fce7c9f27": {
+            "type": "end",
+            "name": "end - End of incident"
+        },
+        "step--a90a24bc-c6af-4943-861d-8c14f5451158": {
+            "type": "end",
+            "name": "end - End of Branch"
+        },
+        "step--010fdf2a-9650-49a5-8ad0-a2bb10b37a5b": {
+            "type": "if-condition",
+            "name": "ifcondition - Read result",
+            "condition": "[$$var_int$$ > 5]",
+            "on_true": [
+                "step--bd3fe768-7e0e-4249-9a28-2894d08326c9"
+            ],
+            "on_false": [
+                "step--a90a24bc-c6af-4943-861d-8c14f5451158"
+            ],
+            "on_completion": "step--94238688-98ac-4fd3-a62e-4c5fce7c9f27"
+        },
+        "step--bd3fe768-7e0e-4249-9a28-2894d08326c9": {
+            "type": "single",
+            "name": "single - Manual response required",
+            "on_completion": "step--a90a24bc-c6af-4943-861d-8c14f5451158",
+            "timeout": 5000,
+            "commands": [
+                {
+                    "type": "manual",
+                    "command": "Review response and take action"
+                }
+            ]
+        }
+    }
+}

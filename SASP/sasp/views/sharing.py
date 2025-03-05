@@ -78,7 +78,6 @@ class SharingViewImport(KeycloakLoginRequiredMixin, views.SASPBaseView):
         'select': _("Select"),
         'submit': _("Submit")
     }
-    # TODO: IMPORTANT post requests currently bypass keycloak login, this is a security risk
     _api = None
     @property
     def api(self):
@@ -116,16 +115,19 @@ class SharingViewImport(KeycloakLoginRequiredMixin, views.SASPBaseView):
         """Submit the selected playbook for import"""
         return None
     
-    def dispatch(self, request, *args, **kwargs):
+    def get(self, request, *args, **kwargs):
         # Dispatch depending on the action
         if self.action is None or not self.test_connection():
-            return super().dispatch(request, *args, **kwargs)
+            return super().get(request, *args, **kwargs)
+    
+    def post(self, request, *args, **kwargs):
         if self.action == 'search':
             return self.search()
         if self.action == 'select':
             return self.select()
         if self.action == 'submit':
             return self.submit()
+        return super().post(request, *args, **kwargs)
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

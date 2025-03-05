@@ -113,6 +113,7 @@ class Messages:
     sharing.misp.errors.import_.name_exists__TITLE = _returnText("Name already exists")
     sharing.misp.errors.import_.name_exists__TXT = _formattedText("A playbook with the name '{}' already exists. Please choose a different name.")
     sharing.misp.errors.import_.page_exists__TXT = _returnText("A page with this name already exists")
+    sharing.misp.errors.import_.playbook_exists__TXT = _returnText("A playbook with this name already exists")
     sharing.misp.errors.import_.no_name__TXT = _returnText("Please enter a name")
     sharing.misp.errors.import_.invalid_name__TXT = _formattedText("Character '{}' is not allowed in name")
     sharing.misp.errors.import_.not_cacao__TXT = _returnText("This is not a CACAO playbook")

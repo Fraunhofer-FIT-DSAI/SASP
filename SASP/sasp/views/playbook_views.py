@@ -359,6 +359,7 @@ class PlaybookBPMNView(KeycloakLoginRequiredMixin, views.SASPBaseDetailView, Sid
         context["help_text"] = kb.help_texts.bpmn.page__OBJ()
         context["name"] = playbook.get_name()
         context["bpmn"],error_list = playbook.bpmn()
+        # context["xml_src"] = context["bpmn"].decode() # (Un-)Comment to hide/show BPMN XML
         for error in error_list:
             messages.error(self.request, error)
         

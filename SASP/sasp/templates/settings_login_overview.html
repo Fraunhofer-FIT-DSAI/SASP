@@ -2,6 +2,24 @@
 
 
 {% block base_content %}
+
+<div class="row mb-3">
+  <h2>Login Information</h2>
+  <h3>Connection Status: {{ Connected }}</h3>
+</div>
+<div class="row mb-3">
+  <nav class="navbar navbar-expand-lg bg-body-secondary mb-2 mt-2 rounded-pill">
+    <ul class="navbar-nav navbar-nav flex-row flex-wrap ms-md-auto me-4">
+      {% if edit_url %}
+      <li class="nav-item"><a href="{{ edit_url }}" class="nav-link">Edit</a></li>
+      {% endif %}
+      {% if reconnect_url %}
+      <li class="nav-item"><a href="{{ reconnect_url }}" class="nav-link">Reconnect</a></li>
+      {% endif %}
+    </ul> 
+  </nav>
+</div>  
+<div class="row mb-3">
 <table class="table table-striped">
   <tbody>
   {% for label,value in login_info.items %}
@@ -12,4 +30,5 @@
   {% endfor %}
   </tbody>
 </table>
+</div>
 {% endblock %}

@@ -178,8 +178,32 @@ class Command(BaseCommand):
             else:
                 login_info.additional_fields[key] = str(path)
 
-
         login_info.save()
+
+        # Hive/Cortex
+        try:
+            login_info_hive = LoginInfo.objects.get(user=profile, name='hive')
+        except LoginInfo.DoesNotExist:
+            login_info_hive = LoginInfo(user=profile, name='hive')
+        
+        login_info_hive.label = 'TheHive'
+        login_info_hive.name = 'hive'
+
+        if (
+            not config or 
+            'Hive' not in config or 
+            'hive_url' not in config['Hive'] or 
+            not config_keys or 
+            'Hive' not in config_keys or
+            'hive_api_key' not in config_keys['Hive']
+            ):
+            print('No Hive configuration found')
+            login_info_hive.url = ''
+            login_info_hive.token = ''
+        else:
+            login_info_hive.url = config['Hive']['hive_url']
+            login_info_hive.token = config_keys['Hive']['hive_api_key']
+        login_info_hive.save()
 
         # AppSettings
         if config and 'SASP' in config:

@@ -125,7 +125,7 @@ class ThreadManager:
         """Spawns a new thread and returns the id of the thread.
         """
         from .external_apis.hive_cortex_api import HiveAPI
-        # from .automation_component.hive_playbook_instances import Workflow_Instance
+        from .automation_component.hive_playbook_instances import Workflow_Instance
         # Start high to avoid collisions with the ids of threads that have already finished
         new_id = max(self.threads.keys(), default=0) + 1
 
@@ -146,9 +146,8 @@ class ThreadManager:
         db_object.initialize()
 
         def setup_workflow():
-            # workflow = Workflow_Instance(playbook.id, root_workflow=True, name=playbook.name, case_id=case_id, db_object=db_object)
-            # workflow.start()
-            pass
+            workflow = Workflow_Instance(playbook.id, root_workflow=True, name=playbook.name, case_id=case_id, db_object=db_object)
+            workflow.start()
             
         if False: #DEBUG: Run in main thread for debugging
             setup_workflow()

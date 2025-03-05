@@ -62,9 +62,9 @@ class SASPCommonView:
                 },
                 "uncategorized": [
                     {
-                        "href": reverse("thehive-dashboard"), 
-                        "label": _("TheHive"),
-                        "disabled": True,
+                        "href": reverse("automation-dashboard"), 
+                        "label": _("Playbook Execution"),
+                        "disabled": False,
                     }
                 ],
             }
@@ -119,6 +119,6 @@ class SASPBaseFormView(generic.edit.FormView, SASPCommonView):
 
 import sasp.views.admin as admin_views
 import sasp.views.base as base_views
-import sasp.views.hive_views as hive_views
+import sasp.views.automation as automation
 import sasp.views.playbook_views as playbook_views
 import sasp.views.sharing as sharing_views

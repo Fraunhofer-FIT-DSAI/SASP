@@ -13,6 +13,10 @@
     <div class="card-body">
         <h5 class="card-title">You are about to delete:</h5>
         <p class="card-text">{{name_deleted_object}}</p>
+        {% if data_deleted_object %}
+        <h5 class="card-title">Data:</h5>
+        <pre class="json-field" data-collapsed="1">{{data_deleted_object|safe}}</pre>
+        {% endif %}
         {% if list_derived_objects %}
         <h5 class="card-title">This will also delete the following objects:</h5>
         <ul>
@@ -25,3 +29,8 @@
     </div>
 </div>
 {% endblock content %}
+
+{% block extra_js %}
+{% load static %}
+<script src="{% static 'webpack/json_parser.js' %}"></script>
+{% endblock %}

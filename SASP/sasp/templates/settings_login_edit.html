@@ -1,0 +1,30 @@
+{% extends "settings_base.html" %}
+{% load django_bootstrap5 %}
+
+
+{% block base_content %}
+<div class="row mb-3">
+  <table class="table table-striped">
+    <tbody>
+    {% for label,value in login_info.items %}
+      <tr>
+        <th>{{ label }}</th>
+        <td>{{ value }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+
+  <form method="post" action="" class="form">
+    {% csrf_token %}
+    {% bootstrap_form form %}
+
+    <div class="sticky-bottom card p-2 mb-3">
+      <ul class="nav">
+        <li class="nav-item me-2">{% bootstrap_button button_type="submit" content="OK" %}</li>
+        <li class="nav-item me-2">{% bootstrap_button button_type="reset" content="Reset" %}</li>
+      </ul>
+    </div>
+  </form>
+</div>
+{% endblock %}
