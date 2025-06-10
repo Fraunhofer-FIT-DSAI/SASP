@@ -43,6 +43,12 @@
     // Extend options
     this.options = $.extend(true, {}, $.fn.tokenfield.defaults, { tokens: this.$element.val() }, this.$element.data(), options)
 
+    // Validate inputType to prevent unsafe HTML construction
+    var validInputTypes = ['text', 'password', 'email', 'number', 'url', 'tel', 'search'];
+    if (!validInputTypes.includes(this.options.inputType)) {
+      this.options.inputType = 'text'; // Default to a safe value
+    }
+
     // Setup delimiters and trigger keys
     this._delimiters = (typeof this.options.delimiter === 'string') ? [this.options.delimiter] : this.options.delimiter
     this._triggerKeys = $.map(this._delimiters, function (delimiter) {
