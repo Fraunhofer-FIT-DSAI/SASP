@@ -2446,8 +2446,8 @@
 
     function colorEscape(str) {
 
-      // only allow characters and numbers
-      return str.replace(/[^0-9a-zA-z]+/g, '_');
+      // only allow alphanumeric characters
+      return str.replace(/[^0-9a-zA-Z]+/g, '_');
     }
 
     function marker(type, fill, stroke) {
