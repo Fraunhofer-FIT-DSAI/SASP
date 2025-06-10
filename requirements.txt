@@ -10,7 +10,7 @@ python-keycloak==4.3.0
 pymediawikidocker==0.13.1
 pymisp==2.4.197
 python-dotenv==1.0.1
-Requests==2.32.3
+Requests==2.32.4
 rich==13.8.0
 httpx==0.27.2
 networkx==3.4.2
