@@ -1,6 +1,6 @@
 thehive4py==2.0.0b8
 confluent_kafka==2.5.3
-Django==5.1.5
+Django==5.1.14
 django-bootstrap5==24.3
 djangorestframework==3.15.2
 Jinja2==3.1.5
