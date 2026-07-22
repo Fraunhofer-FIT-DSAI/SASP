@@ -1,0 +1,218 @@
+{
+    "type": "playbook",
+    "spec_version": "cacao-2.0",
+    "id": "playbook--27266a9a-f7d4-46ff-aaa2-32ddcaf9d868",
+    "name": "Suspicious connection investigation",
+    "description": "This playbook is executed when an alert for a suspicious outgoing connection attempt from an endpoint is raised. A suspicious connection is any connection to an unusual (high) port that is not specifically allowed. This playbook checks the reputation of the destination IP address and blocks the connection. If the IP belongs to a known malicious server the host is isolated from the network and needs to be investigated further.",
+    "playbook_types": [
+        "investigation",
+        "prevention"
+    ],
+    "created_by": "identity--e6d6ec0d-16ff-444d-869c-8404e111617e",
+    "created": "2025-09-17T09:16:56.219Z",
+    "modified": "2025-09-23T06:54:52.749Z",
+    "playbook_variables": {
+        "__docstring__": {
+            "type": "string",
+            "description": "The documentation string that is generated throughout the playbook and used as a case description at the end.",
+            "value": "\"Test\"",
+            "constant": true
+        }
+    },
+    "workflow_start": "start--27681212-0698-4450-8c60-4184b70f916b",
+    "workflow_exception": "end--b50f782a-ead3-4074-ab91-50d4bba999f3",
+    "workflow": {
+        "start--27681212-0698-4450-8c60-4184b70f916b": {
+            "type": "start",
+            "name": "start",
+            "description": "The beginning of the playbook",
+            "on_completion": "action--202390f3-7c25-4823-8aca-d572e350debe"
+        },
+        "end--c51d3bde-c181-4c08-9c08-5c4f106c037a": {
+            "type": "end",
+            "name": "end",
+            "description": "The end state of the playbook."
+        },
+        "end--b50f782a-ead3-4074-ab91-50d4bba999f3": {
+            "type": "end",
+            "name": "exception end",
+            "description": "The end state reached when an exception occurs during execution of the playbook"
+        },
+        "action--202390f3-7c25-4823-8aca-d572e350debe": {
+            "type": "action",
+            "name": "Confirm Execution",
+            "description": "The operator needs to confirm the automatic execution of the playbook.",
+            "commands": [
+                {
+                    "type": "manual",
+                    "command": "Executing this playbook may isolate the target host from the network! Are you sure you want to execute this playbook?"
+                }
+            ],
+            "agent": "agent-target--34618f4c-e7d2-45c3-8ac9-03b54feec380",
+            "targets": [
+                "agent-target--4f7f701d-fbce-4ec8-a5f1-de3c531c31f6"
+            ],
+            "on_success": "action--50c4e911-48c7-478e-b486-9eb321314a77",
+            "on_failure": "end--b50f782a-ead3-4074-ab91-50d4bba999f3"
+        },
+        "action--1cd1d4a6-f26b-4a35-9443-c9cdf607ef81": {
+            "type": "action",
+            "name": "Isolate Host",
+            "description": "Executing this step will isolate the target system from the network through the wazuh agent API.",
+            "commands": [
+                {
+                    "type": "openc2-http",
+                    "description": "Invoking a cortex responder to isolate the host through the wazuh agent API.",
+                    "playbook_activity ": "compose-content",
+                    "command": "{ \"action\": \"start\", \"target\": { \"uri\": \"IPcheck_1_0\" }, \"args\": { \"observable\": \"hive-case-observable:destination\" }}",
+                    "content_b64": "ewogICAgImFjdGlvbiI6ICJzdGFydCIsCiAgICAidGFyZ2V0IjogewogICAgICAgICJ1cmkiOiAiSVBjaGVja18xXzAiCiAgICB9LAogICAgImFyZ3MiOiB7CiAgICAgICAgIm9ic2VydmFibGUiOiAiaGl2ZS1jYXNlLW9ic2VydmFibGU6ZGVzdGluYXRpb24iLAogICAgICAgICJjb3J0ZXhfYXJncyI6IHsKICAgICAgICAgICAgImRvY3N0cmluZyI6ICJfX2RvY3N0cmluZ19fOnZhbHVlIgogICAgICAgIH0KICAgIH0KfQ=="
+                }
+            ],
+            "agent": "agent-target--5d46cfcf-dc12-4b52-ad1d-9d3ad7a40b27",
+            "targets": [
+                "agent-target--4f7f701d-fbce-4ec8-a5f1-de3c531c31f6"
+            ],
+            "in_args": [
+                "__docstring__"
+            ],
+            "out_args": [
+                "__docstring__"
+            ],
+            "on_success": "action--30ac74bb-336a-4e15-be3f-c2140fec4b21",
+            "on_failure": "end--b50f782a-ead3-4074-ab91-50d4bba999f3"
+        },
+        "action--c9a2fc3c-2c60-4f97-b5e8-d8f1856a15b3": {
+            "type": "action",
+            "name": "Block Connection",
+            "description": "The connection will be blocked.",
+            "commands": [
+                {
+                    "type": "openc2-http",
+                    "playbook_activity ": "compose-content",
+                    "command": "{  \"action\": \"start\",  \"target\": {    \"uri\": \"WazuhBlockIP_1_0\"  },  \"args\": {    \"observable\": \"hive-case-observable:destination\"  }}",
+                    "content_b64": "ewogICAgImFjdGlvbiI6ICJzdGFydCIsCiAgICAidGFyZ2V0IjogewogICAgICAgICJ1cmkiOiAiV2F6dWhCbG9ja0lQXzFfMCIKICAgIH0sCiAgICAiYXJncyI6IHsKICAgICAgICAib2JzZXJ2YWJsZSI6ICJoaXZlLWNhc2Utb2JzZXJ2YWJsZTpkZXN0aW5hdGlvbiIsCiAgICAgICAgImNvcnRleF9hcmdzIjogewogICAgICAgICAgICAiaXAiOiAiaGl2ZS1jYXNlLW9ic2VydmFibGU6ZGVzdGluYXRpb24iLAogICAgICAgICAgICAiZG9jc3RyaW5nIjogIl9fZG9jc3RyaW5nX186dmFsdWUiCiAgICAgICAgfQogICAgfQp9"
+                }
+            ],
+            "agent": "agent-target--5d46cfcf-dc12-4b52-ad1d-9d3ad7a40b27",
+            "targets": [
+                "agent-target--4f7f701d-fbce-4ec8-a5f1-de3c531c31f6"
+            ],
+            "in_args": [
+                "__docstring__"
+            ],
+            "out_args": [
+                "__docstring__"
+            ],
+            "on_success": "action--30ac74bb-336a-4e15-be3f-c2140fec4b21",
+            "on_failure": "end--b50f782a-ead3-4074-ab91-50d4bba999f3"
+        },
+        "action--50c4e911-48c7-478e-b486-9eb321314a77": {
+            "type": "action",
+            "name": "Check IP",
+            "description": "This action will invoke a cortex analyzer to check the reputation of an IP address.",
+            "commands": [
+                {
+                    "type": "openc2-http",
+                    "description": "Invoking the IPcheck analyzer to check if an IP is malicious.",
+                    "playbook_activity ": "compose-content",
+                    "command": "{ \"action\": \"start\", \"target\": { \"uri\": \"IPcheck_1_0\" }, \"args\": { \"observable\": \"hive-case-observable:destination\" }}",
+                    "content_b64": "ewogICAgImFjdGlvbiI6ICJzdGFydCIsCiAgICAidGFyZ2V0IjogewogICAgICAgICJ1cmkiOiAiSVBjaGVja18xXzAiCiAgICB9LAogICAgImFyZ3MiOiB7CiAgICAgICAgIm9ic2VydmFibGUiOiAiaGl2ZS1jYXNlLW9ic2VydmFibGU6ZGVzdGluYXRpb24iLAogICAgICAgICJjb3J0ZXhfYXJncyI6IHsKICAgICAgICAgICAgImRvY3N0cmluZyI6ICJfX2RvY3N0cmluZ19fOnZhbHVlIgogICAgICAgIH0KICAgIH0KfQ=="
+                }
+            ],
+            "agent": "agent-target--5d46cfcf-dc12-4b52-ad1d-9d3ad7a40b27",
+            "targets": [
+                "agent-target--4f7f701d-fbce-4ec8-a5f1-de3c531c31f6"
+            ],
+            "in_args": [
+                "__docstring__"
+            ],
+            "out_args": [
+                "__docstring__"
+            ],
+            "on_success": "action--ab79472b-e0d8-472b-be77-6d44a4cf25d4",
+            "on_failure": "end--b50f782a-ead3-4074-ab91-50d4bba999f3"
+        },
+        "action--ab79472b-e0d8-472b-be77-6d44a4cf25d4": {
+            "type": "action",
+            "name": "Check Result",
+            "description": "The operator decides whether the host should be isolated based on the result of the IP check.",
+            "commands": [
+                {
+                    "type": "manual",
+                    "command": "If the analyzed IP was found to be malicious please confirm to isolate the host from the network"
+                }
+            ],
+            "agent": "agent-target--34618f4c-e7d2-45c3-8ac9-03b54feec380",
+            "in_args": [
+                "__docstring__"
+            ],
+            "out_args": [
+                "__docstring__"
+            ],
+            "on_success": "action--1cd1d4a6-f26b-4a35-9443-c9cdf607ef81",
+            "on_failure": "action--26ded77b-2971-409c-b753-3c064a39f457"
+        },
+        "action--26ded77b-2971-409c-b753-3c064a39f457": {
+            "type": "action",
+            "name": "Block Connection Decision",
+            "description": "If the IP was not found to be malicious the connection can still be blocked.",
+            "commands": [
+                {
+                    "type": "manual",
+                    "command": "The destination IP was not found to be malicious. Do you want to block this connection anyway?"
+                }
+            ],
+            "agent": "agent-target--34618f4c-e7d2-45c3-8ac9-03b54feec380",
+            "in_args": [
+                "__docstring__"
+            ],
+            "out_args": [
+                "__docstring__"
+            ],
+            "on_success": "action--c9a2fc3c-2c60-4f97-b5e8-d8f1856a15b3",
+            "on_failure": "action--30ac74bb-336a-4e15-be3f-c2140fec4b21"
+        },
+        "action--30ac74bb-336a-4e15-be3f-c2140fec4b21": {
+            "type": "action",
+            "name": "Document and close case",
+            "description": "As a final step of all workflows the case will be documented and closed automatically.",
+            "commands": [
+                {
+                    "type": "openc2-http",
+                    "description": "This responder will edit the case description to document the actions taken and close the case.",
+                    "playbook_activity ": "compose-content",
+                    "command": "{ \"action\": \"start\", \"target\": { \"uri\": \"HiveCase_1_0\" }, \"args\": { \"observable\": \"hive-case-observable:destination\" }}",
+                    "content_b64": "ewogICAgImFjdGlvbiI6ICJzdGFydCIsCiAgICAidGFyZ2V0IjogewogICAgICAgICJ1cmkiOiAiSGl2ZUNhc2VfMV8wIgogICAgfSwKICAgICJhcmdzIjogewogICAgICAgICJjb3J0ZXhfYXJncyI6IHsKICAgICAgICAgICAgImRvY3N0cmluZyI6ICJfX2RvY3N0cmluZ19fOnZhbHVlIiwKICAgICAgICAgICAgInBsYXlib29rIjogIlN1c3BpY2lvdXMgQ29ubmVjdGlvbiBJbnZlc3RpZ2F0aW9uIgogICAgICAgIH0KICAgIH0KfQ=="
+                }
+            ],
+            "agent": "agent-target--5d46cfcf-dc12-4b52-ad1d-9d3ad7a40b27",
+            "in_args": [
+                "__docstring__"
+            ],
+            "out_args": [
+                "__docstring__"
+            ],
+            "on_success": "end--c51d3bde-c181-4c08-9c08-5c4f106c037a",
+            "on_failure": "end--b50f782a-ead3-4074-ab91-50d4bba999f3"
+        }
+    },
+    "agent_definitions": {
+        "agent-target--5d46cfcf-dc12-4b52-ad1d-9d3ad7a40b27": {
+            "type": "http-api",
+            "name": "Cortex",
+            "description": "This agent uses the cortex integration to execute a analyzer or responder through an openc2-http type action"
+        },
+        "agent-target--34618f4c-e7d2-45c3-8ac9-03b54feec380": {
+            "type": "individual",
+            "name": "Manual",
+            "description": "This agent is used for steps that are manually executed by the operator."
+        }
+    },
+    "target_definitions": {
+        "agent-target--4f7f701d-fbce-4ec8-a5f1-de3c531c31f6": {
+            "type": "linux",
+            "name": "Target",
+            "description": "The is the target system the agents act on"
+        }
+    }
+}

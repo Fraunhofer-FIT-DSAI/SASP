@@ -1,0 +1,764 @@
+{
+  "type": "playbook",
+  "spec_version": "1.1",
+  "id": "playbook--8bf32013-452e-5555-8d42-12001e0ecd60",
+  "name": "Phishing Incident Response Procedure",
+  "playbook_types": [
+    "mitigation",
+    "detection",
+    "remediation",
+    "investigation"
+  ],
+  "created_by": "identity--0a7d4546-8846-5577-9c89-1240a0ea2c4e",
+  "created": "2023-02-23T14:58:08Z",
+  "modified": "2023-02-23T15:20:08Z",
+  "workflow_start": "Step--9935d2ca-5f1a-5bc0-aa51-1c0758b9b5f1",
+  "workflow": {
+    "step--c13f2ee8-43bd-5fdb-a29a-755be887433b": {
+      "type": "if-condition",
+      "name": "Containment-if_Assess the Need for Reporting to Repression Authorities",
+      "on_true": [
+        "step--83f8b6f3-0c34-5ffa-b545-b3dc0e3724ed"
+      ],
+      "on_false": [
+        "step--25cfb884-e749-5bee-bdf0-bda35a773b90"
+      ]
+    },
+    "step--e83f96d6-a07e-5687-baa1-987ff4f5eb77": {
+      "type": "parallel",
+      "name": "Identification-parallel_0",
+      "on_completion": "step--5d5c8494-540c-5450-9e5e-36e2e438b9cb",
+      "next_steps": [
+        "step--3a348c1e-6004-52ad-9064-5314fd08e317",
+        "step--9891cfa5-e97b-5704-a511-817f9d711bcd",
+        "step--76b92e3e-6834-52f6-a2c8-08e4c03160d7",
+        "step--746002d6-3459-5b46-93ef-479bbe661f4c"
+      ]
+    },
+    "step--67601e53-266c-55a4-92b5-1690a5a6ee0c": {
+      "type": "if-condition",
+      "name": "Lessons Learned-if_Provide the Report to DSO CISO",
+      "on_true": [
+        "step--7c4758c0-1e94-546e-9796-c6fe67b7db21"
+      ],
+      "on_false": [
+        "step--82ae7d9a-edcd-55e9-82a2-52ec244f29a5"
+      ]
+    },
+    "step--8f589c3c-e6ae-53d4-a419-ef4da057fe36": {
+      "type": "if-condition",
+      "name": "Containment-if_Inform End Users",
+      "on_true": [
+        "step--0c3eb49c-c716-5f2f-956e-51e048daf76f"
+      ],
+      "on_false": [
+        "step--25cfb884-e749-5bee-bdf0-bda35a773b90"
+      ]
+    },
+    "step--c8bc5e84-5c76-5f19-b50c-139b6fde6c1a": {
+      "type": "if-condition",
+      "name": "Eradication and Recovery-if_Remove Unauthorized Software from the Host",
+      "on_true": [
+        "step--20688594-ad92-54d4-850d-d15328ae48c5"
+      ],
+      "on_false": [
+        "step--70fa58ea-75db-513d-b9d6-cc004e0e7ad2"
+      ]
+    },
+    "step--a97558b4-1d90-573e-9903-43f16efab3a9": {
+      "type": "single",
+      "name": "Eradication and Recovery-Check that no more Anomalous Network Traffic can be Detected",
+      "on_completion": "step--6dbf645a-cd7e-5105-b79b-25e942fe6d10",
+      "commands": [
+        {
+          "type": "manual",
+          "command": "Check that no more Anomalous Network Traffic can be Detected"
+        }
+      ]
+    },
+    "step--b5bfb656-6281-5b5b-a175-36c086064c6e": {
+      "type": "if-condition",
+      "name": "Containment-if_Remove the Compromised Host from the Network",
+      "on_true": [
+        "step--7aa8a3a9-3b10-5952-94b5-e2212f0c1500"
+      ],
+      "on_false": [
+        "step--175537ec-3c26-5753-bb00-075cb933c989"
+      ]
+    },
+    "step--d7860fec-98c1-525c-ae93-b1845d6d3a8a": {
+      "type": "if-condition",
+      "name": "Identification-if_Check Uncommon Logins",
+      "on_true": [
+        "step--e34496bf-412e-5fe1-9b45-f5fadc41e7f3"
+      ],
+      "on_false": [
+        "step--52e09b28-17cc-5539-af6d-28d501c1031c"
+      ]
+    },
+    "step--0bd97337-9dc2-5dfb-af28-b1993ad08b15": {
+      "type": "single",
+      "name": "Eradication and Recovery-Enable Thorough Control of the Compromised User Account",
+      "on_completion": "step--70fa58ea-75db-513d-b9d6-cc004e0e7ad2",
+      "commands": [
+        {
+          "type": "manual",
+          "command": "Enable Thorough Control of the Compromised User Account"
+        }
+      ]
+    },
+    "step--84ebe44a-0587-5d8f-9475-44f01ab8e2ed": {
+      "type": "if-condition",
+      "name": "Preparation-if_Check Content Blocking at Entry Points",
+      "on_true": [
+        "step--8131357c-d3df-555d-a4d3-5829c2c95e09"
+      ],
+      "on_false": [
+        "step--2a3fa366-e5d1-5249-b1e5-aad0cf3a97c9"
+      ]
+    },
+    "step--159f3d9d-7181-582c-9afb-92aee499765d": {
+      "type": "parallel",
+      "name": "Preparation-parallel_0",
+      "on_completion": "step--e83f96d6-a07e-5687-baa1-987ff4f5eb77",
+      "next_steps": [
+        "step--01086add-64d5-56a6-82a5-1372efabeceb",
+        "step--903b4933-1e4e-5080-933a-bea23f4d26e1",
+        "step--84ebe44a-0587-5d8f-9475-44f01ab8e2ed"
+      ]
+    },
+    "step--4b41e58e-631c-521f-8cc8-530e39142284": {
+      "type": "single",
+      "name": "Containment-Block the Traffic to Hostile Websites",
+      "on_completion": "step--175537ec-3c26-5753-bb00-075cb933c989",
+      "commands": [
+        {
+          "type": "manual",
+          "command": "Block the Traffic to Hostile Websites"
+        }
+      ]
+    },
+    "step--c70561d9-bc43-5b5c-b021-06387d68a6b4": {
+      "type": "if-condition",
+      "name": "Containment-if_Forensic Data Protection",
+      "on_true": [
+        "step--799104bc-7103-56c5-9214-8f74e89207d1"
+      ],
+      "on_false": [
+        "step--175537ec-3c26-5753-bb00-075cb933c989"
+      ]
+    },
+    "step--bcda42b9-e080-56a8-add2-819080e555d5": {
+      "type": "single",
+      "name": "Identification-Check Email Server Logs for Suspicous Attachments",
+      "on_completion": "step--52e09b28-17cc-5539-af6d-28d501c1031c",
+      "commands": [
+        {
+          "type": "manual",
+          "command": "Check Email Server Logs for Suspicous Attachments"
+        }
+      ]
+    },
+    "step--6aecc9c7-0754-58fc-8d21-a52e092d5da9": {
+      "type": "single",
+      "name": "Identification-User Reports Phishing and-or Extrortion",
+      "on_completion": "step--ab5e8873-f8cd-53c7-8370-e0f4d57751f1",
+      "commands": [
+        {
+          "type": "manual",
+          "command": "User Reports Phishing and-or Extrortion"
+        }
+      ]
+    },
+    "step--597628b2-94eb-5e53-90a8-e64ec213416d": {
+      "type": "single",
+      "name": "Identification-Check Suspicious Files Appdata",
+      "on_completion": "step--52e09b28-17cc-5539-af6d-28d501c1031c",
+      "commands": [
+        {
+          "type": "manual",
+          "command": "Check suspicious files (%APPDATA"
+        }
+      ]
+    },
+    "step--70fa58ea-75db-513d-b9d6-cc004e0e7ad2": {
+      "type": "end",
+      "name": "Eradication and Recovery-end_parallel_0"
+    },
+    "step--0c3eb49c-c716-5f2f-956e-51e048daf76f": {
+      "type": "single",
+      "name": "Containment-Inform End Users",
+      "on_completion": "step--25cfb884-e749-5bee-bdf0-bda35a773b90",
+      "commands": [
+        {
+          "type": "manual",
+          "command": "Containment-Command-Inform End Users"
+        }
+      ]
+    },
+    "step--84ac1a19-940e-5149-b070-fa1fefc69782": {
+      "type": "parallel",
+      "name": "Lessons Learned-parallel_0",
+      "on_completion": "step--aef33222-dd21-57e5-baf4-3caf0facce0d",
+      "next_steps": [
+        "step--0fb6175c-9ce9-5d82-9552-a1e6162f6560",
+        "step--67601e53-266c-55a4-92b5-1690a5a6ee0c"
+      ]
+    },
+    "step--7c4758c0-1e94-546e-9796-c6fe67b7db21": {
+      "type": "single",
+      "name": "Lessons Learned-Provide the Report to DSO CISO",
+      "on_completion": "step--82ae7d9a-edcd-55e9-82a2-52ec244f29a5",
+      "commands": [
+        {
+          "type": "manual",
+          "command": "Provide the Report to DSO CISO"
+        }
+      ]
+    },
+    "step--a04886b2-2fc7-5bcc-a02c-fd718cf99054": {
+      "type": "single",
+      "name": "Identification-Check Email Server for Larger Amounts of Outgoing Emails",
+      "on_completion": "step--52e09b28-17cc-5539-af6d-28d501c1031c",
+      "commands": [
+        {
+          "type": "manual",
+          "command": "Check Email Server for Larger Amounts of Outgoing Emails"
+        }
+      ]
+    },
+    "step--8131357c-d3df-555d-a4d3-5829c2c95e09": {
+      "type": "single",
+      "name": "Preparation-Check Content Blocking at Array Points",
+      "on_completion": "step--2a3fa366-e5d1-5249-b1e5-aad0cf3a97c9",
+      "commands": [
+        {
+          "type": "manual",
+          "command": "web gateway),Check Content Blocking at Entry Points (email gateway"
+        }
+      ]
+    },
+    "step--4a474164-0910-5160-a693-8540e6056198": {
+      "type": "if-condition",
+      "name": "Eradication and Recovery-if_Check that no more Anomalous Network Traffic can be Detected",
+      "on_true": [
+        "step--a97558b4-1d90-573e-9903-43f16efab3a9"
+      ],
+      "on_false": [
+        "step--6dbf645a-cd7e-5105-b79b-25e942fe6d10"
+      ]
+    },
+    "step--990a9cf4-d3f8-59cc-8b36-c64945457658": {
+      "type": "parallel",
+      "name": "Eradication and Recovery-parallel_1",
+      "on_completion": "step--84ac1a19-940e-5149-b070-fa1fefc69782",
+      "next_steps": [
+        "step--4a474164-0910-5160-a693-8540e6056198",
+        "step--7f24c79a-6826-575f-a86d-10c1ea4d17af"
+      ]
+    },
+    "step--9a7dccdc-2a29-5c82-957f-83d7692b3265": {
+      "type": "single",
+      "name": "Containment-Include the System Administration Team to Perform Network Analysis",
+      "on_completion": "step--25cfb884-e749-5bee-bdf0-bda35a773b90",
+      "commands": [
+        {
+          "type": "manual",
+          "command": "Include the System Administration Team to Perform Network Analysis"
+        }
+      ]
+    },
+    "step--cb826151-1084-5fad-bebd-d001d1a87f62": {
+      "type": "if-condition",
+      "name": "Identification-if_Check Suspicious Files Appdata",
+      "on_true": [
+        "step--597628b2-94eb-5e53-90a8-e64ec213416d"
+      ],
+      "on_false": [
+        "step--52e09b28-17cc-5539-af6d-28d501c1031c"
+      ]
+    },
+    "step--20688594-ad92-54d4-850d-d15328ae48c5": {
+      "type": "single",
+      "name": "Eradication and Recovery-Remove Unauthorized Software from the Host",
+      "on_completion": "step--70fa58ea-75db-513d-b9d6-cc004e0e7ad2",
+      "commands": [
+        {
+          "type": "manual",
+          "command": "Remove Unauthorized Software from the Host"
+        }
+      ]
+    },
+    "step--a50485ea-7d48-5a8c-8968-69ec7c46eb12": {
+      "type": "if-condition",
+      "name": "Identification-if_Check Licensing",
+      "on_true": [
+        "step--cdad46ac-f0c5-5e2a-b605-ce261500ec3e"
+      ],
+      "on_false": [
+        "step--52e09b28-17cc-5539-af6d-28d501c1031c"
+      ]
+    },
+    "step--38d2a4d5-630a-58df-89e5-28fd4b426632": {
+      "type": "end",
+      "name": "Global-endstep"
+    },
+    "step--9935d2ca-5f1a-5bc0-aa51-1c0758b9b5f1": {
+      "type": "start",
+      "name": "Global-startstep",
+      "on_completion": "step--159f3d9d-7181-582c-9afb-92aee499765d"
+    },
+    "step--01086add-64d5-56a6-82a5-1372efabeceb": {
+      "type": "if-condition",
+      "name": "Preparation-if_Evaluate and Update Security Policies",
+      "on_true": [
+        "step--494b91bd-4437-5228-9b92-7163bd987b15"
+      ],
+      "on_false": [
+        "step--2a3fa366-e5d1-5249-b1e5-aad0cf3a97c9"
+      ]
+    },
+    "step--545b85b2-13ea-55ab-9bab-9ea8bcc49eb5": {
+      "type": "single",
+      "name": "Eradication and Recovery-Check that Security Policies are Operational",
+      "on_completion": "step--6dbf645a-cd7e-5105-b79b-25e942fe6d10",
+      "commands": [
+        {
+          "type": "manual",
+          "command": "Check that Security Policies are Operational"
+        }
+      ]
+    },
+    "step--52e09b28-17cc-5539-af6d-28d501c1031c": {
+      "type": "end",
+      "name": "Identification-end_parallel_1"
+    },
+    "step--746002d6-3459-5b46-93ef-479bbe661f4c": {
+      "type": "if-condition",
+      "name": "Identification-if_User Reports Suspicious Emails",
+      "on_true": [
+        "step--6c5d01cb-ac38-58be-8fad-9533c2ca9ddc"
+      ],
+      "on_false": [
+        "step--ab5e8873-f8cd-53c7-8370-e0f4d57751f1"
+      ]
+    },
+    "step--82ae7d9a-edcd-55e9-82a2-52ec244f29a5": {
+      "type": "end",
+      "name": "Lessons Learned-end_parallel_0"
+    },
+    "step--2a3fa366-e5d1-5249-b1e5-aad0cf3a97c9": {
+      "type": "end",
+      "name": "Preparation-end_parallel_0"
+    },
+    "step--05c281cc-7197-5b25-9276-8ec83d6e6631": {
+      "type": "parallel",
+      "name": "Containment-parallel_0",
+      "on_completion": "step--86d0acb6-ccc0-5172-aa60-1a4b6b3557d4",
+      "next_steps": [
+        "step--8f589c3c-e6ae-53d4-a419-ef4da057fe36",
+        "step--c13f2ee8-43bd-5fdb-a29a-755be887433b",
+        "step--f81e47fe-da8b-5127-a2ca-5653197142a0"
+      ]
+    },
+    "step--864f8715-66d3-5978-8ead-15dbc954a6a9": {
+      "type": "single",
+      "name": "Containment-Block the Traffic from Hostile Email Addresses",
+      "on_completion": "step--175537ec-3c26-5753-bb00-075cb933c989",
+      "commands": [
+        {
+          "type": "manual",
+          "command": "Block the Traffic from Hostile Email Addresses"
+        }
+      ]
+    },
+    "step--9891cfa5-e97b-5704-a511-817f9d711bcd": {
+      "type": "if-condition",
+      "name": "Identification-if_User Reports Phishing and-or Extrortion",
+      "on_true": [
+        "step--6aecc9c7-0754-58fc-8d21-a52e092d5da9"
+      ],
+      "on_false": [
+        "step--ab5e8873-f8cd-53c7-8370-e0f4d57751f1"
+      ]
+    },
+    "step--6c5d01cb-ac38-58be-8fad-9533c2ca9ddc": {
+      "type": "single",
+      "name": "Identification-User Reports Suspicious Emails",
+      "on_completion": "step--ab5e8873-f8cd-53c7-8370-e0f4d57751f1",
+      "commands": [
+        {
+          "type": "manual",
+          "command": "User Reports Suspicious Emails"
+        }
+      ]
+    },
+    "step--5d5c8494-540c-5450-9e5e-36e2e438b9cb": {
+      "type": "parallel",
+      "name": "Identification-parallel_1",
+      "on_completion": "step--05c281cc-7197-5b25-9276-8ec83d6e6631",
+      "next_steps": [
+        "step--a50485ea-7d48-5a8c-8968-69ec7c46eb12",
+        "step--cb826151-1084-5fad-bebd-d001d1a87f62",
+        "step--56283ab8-7d79-5ad7-ac23-69e2a4d3dd0c",
+        "step--ba40ec22-9641-5e2a-8023-3aa529a0ddd9",
+        "step--8b97b85a-baff-5e55-a07f-546dc97c07fb",
+        "step--d7860fec-98c1-525c-ae93-b1845d6d3a8a"
+      ]
+    },
+    "step--7aa8a3a9-3b10-5952-94b5-e2212f0c1500": {
+      "type": "single",
+      "name": "Containment-Remove the Compromised Host from the Network",
+      "on_completion": "step--175537ec-3c26-5753-bb00-075cb933c989",
+      "commands": [
+        {
+          "type": "manual",
+          "command": "Remove the Compromised Host from the Network"
+        }
+      ]
+    },
+    "step--175537ec-3c26-5753-bb00-075cb933c989": {
+      "type": "end",
+      "name": "Containment-end_parallel_1"
+    },
+    "step--799104bc-7103-56c5-9214-8f74e89207d1": {
+      "type": "single",
+      "name": "Containment-Forensic Data Protection",
+      "on_completion": "step--175537ec-3c26-5753-bb00-075cb933c989",
+      "commands": [
+        {
+          "type": "manual",
+          "command": "Forensic Data Protection"
+        }
+      ]
+    },
+    "step--c8e35746-7ff1-565f-8bff-823b7b5a5491": {
+      "type": "single",
+      "name": "Containment-Block the Compromised User Account",
+      "on_completion": "step--175537ec-3c26-5753-bb00-075cb933c989",
+      "commands": [
+        {
+          "type": "manual",
+          "command": "Block the Compromised User Account"
+        }
+      ]
+    },
+    "step--1f5f02f0-adc7-52fa-b9db-cd30454a0ebe": {
+      "type": "if-condition",
+      "name": "Eradication and Recovery-if_Update Gateway Policies based on the Identified IoCs",
+      "on_true": [
+        "step--6b4c3191-7da2-5036-8ef1-2bdca5bd7b72"
+      ],
+      "on_false": [
+        "step--70fa58ea-75db-513d-b9d6-cc004e0e7ad2"
+      ]
+    },
+    "step--25cfb884-e749-5bee-bdf0-bda35a773b90": {
+      "type": "end",
+      "name": "Containment-end_parallel_0"
+    },
+    "step--cdad46ac-f0c5-5e2a-b605-ce261500ec3e": {
+      "type": "single",
+      "name": "Identification-Check Licensing",
+      "on_completion": "step--52e09b28-17cc-5539-af6d-28d501c1031c",
+      "commands": [
+        {
+          "type": "manual",
+          "command": "Check Licensing"
+        }
+      ]
+    },
+    "step--15cefedc-7020-5a21-87c8-4bc1a5b3d695": {
+      "type": "single",
+      "name": "Eradication and Recovery-Change the Password for the Compromised User Account and Reactivate It",
+      "on_completion": "step--70fa58ea-75db-513d-b9d6-cc004e0e7ad2",
+      "commands": [
+        {
+          "type": "manual",
+          "command": "Change the Password for the Compromised User Account and Reactivate It"
+        }
+      ]
+    },
+    "step--3a348c1e-6004-52ad-9064-5314fd08e317": {
+      "type": "if-condition",
+      "name": "Identification-if_User Reports Websites with Suspicious Content",
+      "on_true": [
+        "step--65977009-92ed-50a7-97c6-3fe209444ed6"
+      ],
+      "on_false": [
+        "step--ab5e8873-f8cd-53c7-8370-e0f4d57751f1"
+      ]
+    },
+    "step--93c782dc-3589-54b3-b70a-3aef9b0f5d27": {
+      "type": "single",
+      "name": "Preparation-Train and Inform End Users",
+      "on_completion": "step--2a3fa366-e5d1-5249-b1e5-aad0cf3a97c9",
+      "commands": [
+        {
+          "type": "manual",
+          "command": "Train and Inform End Users"
+        }
+      ]
+    },
+    "step--35078bb7-7b35-539b-b963-a008a332daf4": {
+      "type": "parallel",
+      "name": "Eradication and Recovery-parallel_0",
+      "on_completion": "step--990a9cf4-d3f8-59cc-8b36-c64945457658",
+      "next_steps": [
+        "step--1f5f02f0-adc7-52fa-b9db-cd30454a0ebe",
+        "step--c8bc5e84-5c76-5f19-b50c-139b6fde6c1a",
+        "step--bfe64c63-be6a-5a46-8df8-d7b38133ec7d",
+        "step--c298f3b7-0b21-5b93-bf23-bab06721502a"
+      ]
+    },
+    "step--ab5e8873-f8cd-53c7-8370-e0f4d57751f1": {
+      "type": "end",
+      "name": "Identification-end_parallel_0"
+    },
+    "step--7f24c79a-6826-575f-a86d-10c1ea4d17af": {
+      "type": "if-condition",
+      "name": "Eradication and Recovery-if_Check that Security Policies are Operational",
+      "on_true": [
+        "step--545b85b2-13ea-55ab-9bab-9ea8bcc49eb5"
+      ],
+      "on_false": [
+        "step--6dbf645a-cd7e-5105-b79b-25e942fe6d10"
+      ]
+    },
+    "step--6dbf645a-cd7e-5105-b79b-25e942fe6d10": {
+      "type": "end",
+      "name": "Eradication and Recovery-end_parallel_1"
+    },
+    "step--65977009-92ed-50a7-97c6-3fe209444ed6": {
+      "type": "single",
+      "name": "Identification-User Reports Websites with Suspicious Content",
+      "on_completion": "step--ab5e8873-f8cd-53c7-8370-e0f4d57751f1",
+      "commands": [
+        {
+          "type": "manual",
+          "command": "User Reports Websites with Suspicious Content"
+        }
+      ]
+    },
+    "step--83f8b6f3-0c34-5ffa-b545-b3dc0e3724ed": {
+      "type": "single",
+      "name": "Containment-Assess the Need for Reporting to Repression Authorities",
+      "on_completion": "step--25cfb884-e749-5bee-bdf0-bda35a773b90",
+      "commands": [
+        {
+          "type": "manual",
+          "command": "Assess the Need for Reporting to Repression Authorities"
+        }
+      ]
+    },
+    "step--7878eae6-a5cc-5f3b-8042-f2de376fab6c": {
+      "type": "single",
+      "name": "Identification-User Reports Receiving Many Unwanted Emails",
+      "on_completion": "step--ab5e8873-f8cd-53c7-8370-e0f4d57751f1",
+      "commands": [
+        {
+          "type": "manual",
+          "command": "User Reports Receiving Many Unwanted Emails"
+        }
+      ]
+    },
+    "step--bfe64c63-be6a-5a46-8df8-d7b38133ec7d": {
+      "type": "if-condition",
+      "name": "Eradication and Recovery-if_Enable Thorough Control of the Compromised User Account",
+      "on_true": [
+        "step--0bd97337-9dc2-5dfb-af28-b1993ad08b15"
+      ],
+      "on_false": [
+        "step--70fa58ea-75db-513d-b9d6-cc004e0e7ad2"
+      ]
+    },
+    "step--86d0acb6-ccc0-5172-aa60-1a4b6b3557d4": {
+      "type": "parallel",
+      "name": "Containment-parallel_1",
+      "on_completion": "step--35078bb7-7b35-539b-b963-a008a332daf4",
+      "next_steps": [
+        "step--b5bfb656-6281-5b5b-a175-36c086064c6e",
+        "step--f005d261-95e9-5f0b-8f13-1d6483db9759",
+        "step--8276eea5-f8a5-53b5-bb18-79da092e3842",
+        "step--c70561d9-bc43-5b5c-b021-06387d68a6b4",
+        "step--5e42de36-451a-5ff6-8925-5f0c2bb681b3"
+      ]
+    },
+    "step--6b4c3191-7da2-5036-8ef1-2bdca5bd7b72": {
+      "type": "single",
+      "name": "Eradication and Recovery-Update Gateway Policies based on the Identified IoCs",
+      "on_completion": "step--70fa58ea-75db-513d-b9d6-cc004e0e7ad2",
+      "commands": [
+        {
+          "type": "manual",
+          "command": "Update Gateway Policies based on the Identified IoCs"
+        }
+      ]
+    },
+    "step--903b4933-1e4e-5080-933a-bea23f4d26e1": {
+      "type": "if-condition",
+      "name": "Preparation-if_Train and Inform End Users",
+      "on_true": [
+        "step--93c782dc-3589-54b3-b70a-3aef9b0f5d27"
+      ],
+      "on_false": [
+        "step--2a3fa366-e5d1-5249-b1e5-aad0cf3a97c9"
+      ]
+    },
+    "step--76b92e3e-6834-52f6-a2c8-08e4c03160d7": {
+      "type": "if-condition",
+      "name": "Identification-if_User Reports Receiving Many Unwanted Emails",
+      "on_true": [
+        "step--7878eae6-a5cc-5f3b-8042-f2de376fab6c"
+      ],
+      "on_false": [
+        "step--ab5e8873-f8cd-53c7-8370-e0f4d57751f1"
+      ]
+    },
+    "step--ba40ec22-9641-5e2a-8023-3aa529a0ddd9": {
+      "type": "if-condition",
+      "name": "Identification-if_Check Supicious Network Activities",
+      "on_true": [
+        "step--1ffcfbd9-fb79-54a4-a7e8-9a7a4a2556bf"
+      ],
+      "on_false": [
+        "step--52e09b28-17cc-5539-af6d-28d501c1031c"
+      ]
+    },
+    "step--1ffcfbd9-fb79-54a4-a7e8-9a7a4a2556bf": {
+      "type": "single",
+      "name": "Identification-Check Supicious Network Activities",
+      "on_completion": "step--52e09b28-17cc-5539-af6d-28d501c1031c",
+      "commands": [
+        {
+          "type": "manual",
+          "command": "Check Supicious Network Activities"
+        }
+      ]
+    },
+    "step--aef33222-dd21-57e5-baf4-3caf0facce0d": {
+      "type": "single",
+      "name": "Lessons Learned-Inform and Train End Users",
+      "on_completion": "step--38d2a4d5-630a-58df-89e5-28fd4b426632",
+      "commands": [
+        {
+          "type": "manual",
+          "command": "Inform and Train End Users"
+        }
+      ]
+    },
+    "step--5e42de36-451a-5ff6-8925-5f0c2bb681b3": {
+      "type": "if-condition",
+      "name": "Containment-if_Block the Compromised User Account",
+      "on_true": [
+        "step--c8e35746-7ff1-565f-8bff-823b7b5a5491"
+      ],
+      "on_false": [
+        "step--175537ec-3c26-5753-bb00-075cb933c989"
+      ]
+    },
+    "step--56283ab8-7d79-5ad7-ac23-69e2a4d3dd0c": {
+      "type": "if-condition",
+      "name": "Identification-if_Check Email Server Logs for Suspicous Attachments",
+      "on_true": [
+        "step--bcda42b9-e080-56a8-add2-819080e555d5"
+      ],
+      "on_false": [
+        "step--52e09b28-17cc-5539-af6d-28d501c1031c"
+      ]
+    },
+    "step--494b91bd-4437-5228-9b92-7163bd987b15": {
+      "type": "single",
+      "name": "Preparation-Evaluate and Update Security Policies",
+      "on_completion": "step--2a3fa366-e5d1-5249-b1e5-aad0cf3a97c9",
+      "commands": [
+        {
+          "type": "manual",
+          "command": "Evaluate and Update Security Policies"
+        }
+      ]
+    },
+    "step--f81e47fe-da8b-5127-a2ca-5653197142a0": {
+      "type": "if-condition",
+      "name": "Containment-if_Include the System Administration Team to Perform Network Analysis",
+      "on_true": [
+        "step--9a7dccdc-2a29-5c82-957f-83d7692b3265"
+      ],
+      "on_false": [
+        "step--25cfb884-e749-5bee-bdf0-bda35a773b90"
+      ]
+    },
+    "step--778659e7-fc0c-5497-93cb-7b4d891f14bf": {
+      "type": "single",
+      "name": "Lessons Learned-Provide the Report to CERT",
+      "on_completion": "step--82ae7d9a-edcd-55e9-82a2-52ec244f29a5",
+      "commands": [
+        {
+          "type": "manual",
+          "command": "Provide the Report to CERT"
+        }
+      ]
+    },
+    "step--f005d261-95e9-5f0b-8f13-1d6483db9759": {
+      "type": "if-condition",
+      "name": "Containment-if_Block the Traffic to Hostile Websites",
+      "on_true": [
+        "step--4b41e58e-631c-521f-8cc8-530e39142284"
+      ],
+      "on_false": [
+        "step--175537ec-3c26-5753-bb00-075cb933c989"
+      ]
+    },
+    "step--8276eea5-f8a5-53b5-bb18-79da092e3842": {
+      "type": "if-condition",
+      "name": "Containment-if_Block the Traffic from Hostile Email Addresses",
+      "on_true": [
+        "step--864f8715-66d3-5978-8ead-15dbc954a6a9"
+      ],
+      "on_false": [
+        "step--175537ec-3c26-5753-bb00-075cb933c989"
+      ]
+    },
+    "step--c298f3b7-0b21-5b93-bf23-bab06721502a": {
+      "type": "if-condition",
+      "name": "Eradication and Recovery-if_Change the Password for the Compromised User Account and Reactivate It",
+      "on_true": [
+        "step--15cefedc-7020-5a21-87c8-4bc1a5b3d695"
+      ],
+      "on_false": [
+        "step--70fa58ea-75db-513d-b9d6-cc004e0e7ad2"
+      ]
+    },
+    "step--8b97b85a-baff-5e55-a07f-546dc97c07fb": {
+      "type": "if-condition",
+      "name": "Identification-if_Check Email Server for Larger Amounts of Outgoing Emails",
+      "on_true": [
+        "step--a04886b2-2fc7-5bcc-a02c-fd718cf99054"
+      ],
+      "on_false": [
+        "step--52e09b28-17cc-5539-af6d-28d501c1031c"
+      ]
+    },
+    "step--e34496bf-412e-5fe1-9b45-f5fadc41e7f3": {
+      "type": "single",
+      "name": "Identification-Check Uncommon Logins",
+      "on_completion": "step--52e09b28-17cc-5539-af6d-28d501c1031c",
+      "commands": [
+        {
+          "type": "manual",
+          "command": "Check Uncommon Logins"
+        }
+      ]
+    },
+    "step--0fb6175c-9ce9-5d82-9552-a1e6162f6560": {
+      "type": "if-condition",
+      "name": "Lessons Learned-if_Provide the Report to CERT",
+      "on_true": [
+        "step--778659e7-fc0c-5497-93cb-7b4d891f14bf"
+      ],
+      "on_false": [
+        "step--82ae7d9a-edcd-55e9-82a2-52ec244f29a5"
+      ]
+    }
+  }
+}
