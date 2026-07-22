@@ -1,0 +1,231 @@
+{
+  "type": "playbook",
+  "spec_version": "cacao-2.0",
+  "id": "playbook--45883fc0-fe1f-4ed8-8be8-c07190953170",
+  "name": "Phishing Email Investigation",
+  "description": "This playbook is executed when an email arrives in the phishing investigation mailbox.",
+  "playbook_types": [
+    "investigation"
+  ],
+  "playbook_activities": [
+    "investigate content",
+    "scan attachments"
+  ],
+  "created_by": "identity--e6d6ec0d-16ff-444d-869c-8404e111617e",
+  "created": "2025-10-02T10:04:52.057Z",
+  "modified": "2025-10-02T10:04:52.057Z",
+  "revoked": false,
+  "playbook_variables": {
+    "__docstring__": {
+      "type": "string",
+      "description": "The documentation of the playbook execution.",
+      "value": "Test",
+      "constant": true,
+      "external": false
+    }
+  },
+  "workflow_start": "start--4412bd5c-0f07-4544-b725-3a18f5d25ab8",
+  "workflow_exception": "end--378667f3-6ca3-4c68-96fe-bc772b78961a",
+  "workflow": {
+    "start--4412bd5c-0f07-4544-b725-3a18f5d25ab8": {
+      "on_completion": "action--f078e00d-5449-42b5-a59e-82fce0ef6e7e",
+      "type": "start"
+    },
+    "end--378667f3-6ca3-4c68-96fe-bc772b78961a": {
+      "name": "exception end",
+      "description": "The end state when an exception occurs during the execution of the playbook.",
+      "type": "end"
+    },
+    "end--3fee977a-6c0a-4475-92b9-3068aeb35430": {
+      "name": "end",
+      "description": "The regular end state of the playbook",
+      "type": "end"
+    },
+    "action--f078e00d-5449-42b5-a59e-82fce0ef6e7e": {
+      "name": "Investigate Sender",
+      "description": "The operator investigates the sender of the suspicious email.",
+      "on_completion": "action--b96f63db-255a-4070-a4c6-e554535f4e15",
+      "type": "action",
+      "commands": [
+        {
+          "type": "manual",
+          "description": "Investigate the sender of the mail for signs of phishing.",
+          "command": " - is it from an internal or external sender?\n - is the sender a known partner of the company?\n - did the email pass SPF-checks and DKIM-verification? \n- is the sender domain on any known spam list?\n- does the sender domain show any hints of phishing attempts (e.g. domain of popular service with typo)? "
+        }
+      ],
+      "agent": "agent-target--91514cde-ebc7-4345-8903-a0848c50d9c6",
+      "in_args": [
+        "__docstring__"
+      ],
+      "out_args": [
+        "__docstring__"
+      ]
+    },
+    "action--b96f63db-255a-4070-a4c6-e554535f4e15": {
+      "name": "Investigate Content",
+      "description": "The operator investigates the message content of the suspicious email.",
+      "on_completion": "action--f3bd4dc0-2f4b-43cd-afac-83501d87c312",
+      "type": "action",
+      "commands": [
+        {
+          "type": "manual",
+          "description": "Investigate the message content for signs of phishing.",
+          "command": "- Does not content show typical signs of phishing attempts? (generic text, pressure to act, asking user to log in, ..)\n- Are there any links in the message? \n- Investigate links for signs of deception (typo-squatting, url-shorteners, redirect-urls, ..)\n- Investigate the link from a sandbox, verify site ownership"
+        }
+      ],
+      "agent": "agent-target--91514cde-ebc7-4345-8903-a0848c50d9c6",
+      "in_args": [
+        "__docstring__"
+      ],
+      "out_args": [
+        "__docstring__"
+      ]
+    },
+    "action--f3bd4dc0-2f4b-43cd-afac-83501d87c312": {
+      "name": "Investigate Attachments",
+      "description": "If there are any attachments the operator investigates them.",
+      "on_success": "action--8c3acd19-598d-4bd7-8256-cd1166c75c13",
+      "on_failure": "action--e7e53854-708a-42c7-bcbc-015900eef150",
+      "type": "action",
+      "commands": [
+        {
+          "type": "manual",
+          "description": "If there are any attachments investigate them for signs of phishing.",
+          "command": " - Do the attachments look suspicious (e.g. file.pdf.exe, office documents with macros, compressed archives)\n- If the sender, content or attachments raised any suspicion the attachments should be scanned for malware or executed in a sandbox.\nConfirm this command to invoke a scan."
+        }
+      ],
+      "agent": "agent-target--91514cde-ebc7-4345-8903-a0848c50d9c6",
+      "in_args": [
+        "__docstring__"
+      ],
+      "out_args": [
+        "__docstring__"
+      ]
+    },
+    "action--8c3acd19-598d-4bd7-8256-cd1166c75c13": {
+      "name": "Scan Attachments",
+      "description": "The VirusTotal analyzer is invoked on attached files to compare them to known malware signatures.",
+      "on_success": "action--e7e53854-708a-42c7-bcbc-015900eef150",
+      "on_failure": "end--378667f3-6ca3-4c68-96fe-bc772b78961a",
+      "type": "action",
+      "commands": [
+        {
+          "type": "openc2-http",
+          "description": "The VirusTotal analyzer is used to scan attached files for known malware signatures."
+        }
+      ],
+      "agent": "agent-target--a8eb9865-9762-4e82-973c-b1d2299d0bb9",
+      "targets": [
+        "agent-target--988787dc-b942-401f-8027-fb36583d81c1"
+      ],
+      "in_args": [
+        "__docstring__"
+      ],
+      "out_args": [
+        "__docstring__"
+      ]
+    },
+    "action--e7e53854-708a-42c7-bcbc-015900eef150": {
+      "name": "Phishing Decision",
+      "description": "The operator decides if the mail is malicious or not.",
+      "on_success": "action--e7388346-6d1b-4cdc-a707-8ef544ea204d",
+      "on_failure": "action--68384f7e-d670-47b1-80e0-70931674bcb0",
+      "type": "action",
+      "commands": [
+        {
+          "type": "manual",
+          "description": "The operator decides if the email is a phishing attempt or not. "
+        }
+      ],
+      "agent": "agent-target--91514cde-ebc7-4345-8903-a0848c50d9c6",
+      "in_args": [
+        "__docstring__"
+      ],
+      "out_args": [
+        "__docstring__"
+      ]
+    },
+    "action--68384f7e-d670-47b1-80e0-70931674bcb0": {
+      "name": "Document and close case",
+      "description": "The HiveCase cortex responder is invoked to document the results of the investigation and close the case.",
+      "on_success": "end--3fee977a-6c0a-4475-92b9-3068aeb35430",
+      "on_failure": "end--378667f3-6ca3-4c68-96fe-bc772b78961a",
+      "type": "action",
+      "commands": [
+        {
+          "type": "openc2-http",
+          "description": "Invoke the HiveCase responder to document the results of the investiagtion."
+        }
+      ],
+      "agent": "agent-target--a8eb9865-9762-4e82-973c-b1d2299d0bb9",
+      "targets": [
+        "agent-target--988787dc-b942-401f-8027-fb36583d81c1"
+      ],
+      "in_args": [
+        "__docstring__"
+      ],
+      "out_args": [
+        "__docstring__"
+      ]
+    },
+    "action--e7388346-6d1b-4cdc-a707-8ef544ea204d": {
+      "name": "Remediation",
+      "description": "If the mail was found to a phishing attempt take necessary steps to prevent further attempts.",
+      "on_completion": "action--f7985dc8-8308-4fa7-a1d9-1dc2b0aec041",
+      "type": "action",
+      "commands": [
+        {
+          "type": "manual",
+          "description": "Take steps to prevent further phishing attempts from the same sender.",
+          "command": "- Remove the mail from the user's inbox\n- If the mail was sent by a known bad domain or obviously malicious domain (e.g. typosquatting in domain name) block the sender\n- If an attachment was determined to be malicious add the file signature to the block list of the scanner \n- If a linked website was determined to be used for phishing block the domain in the firewall \nMake sure to include a reference to the id of this case for any configuration changes you make in response to this alert."
+        }
+      ],
+      "agent": "agent-target--91514cde-ebc7-4345-8903-a0848c50d9c6",
+      "in_args": [
+        "__docstring__"
+      ],
+      "out_args": [
+        "__docstring__"
+      ]
+    },
+    "action--f7985dc8-8308-4fa7-a1d9-1dc2b0aec041": {
+      "name": "Recovery/Impact Investigation",
+      "description": "The operator should investigate if the email had any negative impact.",
+      "on_completion": "action--68384f7e-d670-47b1-80e0-70931674bcb0",
+      "type": "action",
+      "commands": [
+        {
+          "type": "manual",
+          "description": "Investigate if there has already been any negative impact as a result of the phishing email or if there are more messages that are part of the same campaign. Take necessary recovery steps based on the results of the investigation.",
+          "command": "- If the mail was sent by an internal sender begin further investigation according to the information gathered in Step 1, i.e. investigate if credentials of an internal user were compromised\n- If the mail was sent by a known business partner or reputable contact try to contact their abuse contact to inform them of a possible compromised account \n- If a malicious attachment or link was found\n    - Determine if the user who reported the mail has already downloaded a file or clicked on a link and take appropriate actions \n    - Create a filter to search for other received emails from the same sender or with the same attachments \n- If this alert seems to be part of a larger-scale phishing campaign escalate this information as appropriate"
+        }
+      ],
+      "agent": "agent-target--91514cde-ebc7-4345-8903-a0848c50d9c6",
+      "in_args": [
+        "__docstring__"
+      ],
+      "out_args": [
+        "__docstring__"
+      ]
+    }
+  },
+  "agent_definitions": {
+    "agent-target--91514cde-ebc7-4345-8903-a0848c50d9c6": {
+      "type": "individual",
+      "name": "manual",
+      "description": "This agent represents actions manually executed by the operator."
+    },
+    "agent-target--a8eb9865-9762-4e82-973c-b1d2299d0bb9": {
+      "type": "http-api",
+      "name": "cortex",
+      "description": "This agent is used when invoking cortex analyzers and responders."
+    }
+  },
+  "target_definitions": {
+    "agent-target--988787dc-b942-401f-8027-fb36583d81c1": {
+      "type": "linux",
+      "name": "Target",
+      "description": "A generic target definition to use in action steps."
+    }
+  }
+}

@@ -1,0 +1,107 @@
+{
+    "type": "playbook",
+    "spec_version": "cacao-2.0",
+    "id": "playbook--2788c868-9afb-479d-be83-693878c1656d",
+    "name": "Evaluate File Hash",
+    "description": "A demonstration playbook in which a file hash is evaluated by an analyzer.",
+    "playbook_types": [
+        "investigation",
+        "mitigation"
+    ],
+    "created_by": "identity--c98906b6-a10c-4d1e-9062-37edbc6618c1",
+    "created": "2026-04-10T12:31:02Z",
+    "modified": "2026-04-10T12:31:02Z",
+    "workflow_start": "start--afbeaacf-fa79-4e30-91ec-34b03f3ea162",
+    "workflow_exception": "end--f6594b2d-2559-4610-9c21-237a68710e30",
+    "workflow": {
+        "action--5ad3f889-4fff-483c-b506-246d87a4cae0": {
+            "type": "action",
+            "name": "Scan File Hash",
+            "owner": "identity--c98906b6-a10c-4d1e-9062-37edbc6618c1",
+            "commands": [
+                {
+                    "type": "openc2-http",
+                    "playbook_activity ": "compose-content",
+                    "command": "{\"action\": \"start\", \"target\": {\"uri\": \"TestAnalyzer_1_0\"}, \"args\": {\"observable\": \"hive-case-observable:exHash\"}}",
+                    "content_b64": "eyJhY3Rpb24iOiAic3RhcnQiLCAidGFyZ2V0IjogeyJ1cmkiOiAiVGVzdEFuYWx5emVyXzFfMCJ9LCAiYXJncyI6IHsib2JzZXJ2YWJsZSI6ICJoaXZlLWNhc2Utb2JzZXJ2YWJsZTpleEhhc2gifX0="
+                }
+            ],
+            "agent": "individual--e0b0fa79-5483-406c-af75-f950e42e2a5f",
+            "on_success": "if-condition--7b519dbb-b18c-4e6e-af21-526a666713d0",
+            "on_failure": "if-condition--7b519dbb-b18c-4e6e-af21-526a666713d0"
+        },
+        "if-condition--7b519dbb-b18c-4e6e-af21-526a666713d0": {
+            "type": "if-condition",
+            "name": "Evaluate Scan Result",
+            "owner": "identity--c98906b6-a10c-4d1e-9062-37edbc6618c1",
+            "condition": "[hive-analyzer-result:TestAnalyzer\\_1\\_0.exHash.report.success = true]",
+            "on_true": "end--ab3b5a4b-d7f9-4db7-bcbb-683c1dc87917",
+            "on_false": "action--c59d5c53-5bd9-4d2d-a01c-6bdbe274af1f",
+            "on_completion": "end--c194393d-3a01-4a7d-a487-719ed34a42ee"
+        },
+        "end--ab3b5a4b-d7f9-4db7-bcbb-683c1dc87917": {
+            "type": "end",
+            "name": "Hash Harmless",
+            "owner": "identity--c98906b6-a10c-4d1e-9062-37edbc6618c1"
+        },
+        "action--c59d5c53-5bd9-4d2d-a01c-6bdbe274af1f": {
+            "type": "action",
+            "name": "Request Operator Action",
+            "owner": "identity--c98906b6-a10c-4d1e-9062-37edbc6618c1",
+            "commands": [
+                {
+                    "type": "manual",
+                    "playbook_activity ": "compose-content",
+                    "command": "Approve mitigation actions."
+                }
+            ],
+            "agent": "individual--e0b0fa79-5483-406c-af75-f950e42e2a5f",
+            "on_success": "action--4d594b91-0ee6-4f4e-80f9-84c7b071eacd",
+            "on_failure": "end--2fbd6d27-fb4a-422d-b635-ca9612a1a26e"
+        },
+        "action--4d594b91-0ee6-4f4e-80f9-84c7b071eacd": {
+            "type": "action",
+            "name": "Mitigation Actions",
+            "owner": "identity--c98906b6-a10c-4d1e-9062-37edbc6618c1",
+            "commands": [
+                {
+                    "type": "openc2-http",
+                    "description": "Invokes Cortex Responders for mitigation actions",
+                    "playbook_activity ": "compose-content",
+                    "command": "{\"action\": \"start\", \"target\": {\"uri\": \"Test_1_0\"}, \"args\": {\"cortex_args\": {}}}",
+                    "content_b64": "eyJhY3Rpb24iOiAic3RhcnQiLCAidGFyZ2V0IjogeyJ1cmkiOiAiVGVzdF8xXzAifSwgImFyZ3MiOiB7ImNvcnRleF9hcmdzIjoge319fQ=="
+                }
+            ],
+            "agent": "individual--e0b0fa79-5483-406c-af75-f950e42e2a5f",
+            "on_success": "end--b8946f79-8e1b-4a2c-96a1-74c0b3dac4ed",
+            "on_failure": "end--c1c53d78-d301-4365-afda-e62cf0e1579a"
+        },
+        "end--2fbd6d27-fb4a-422d-b635-ca9612a1a26e": {
+            "type": "end",
+            "name": "Operator Took No Actions",
+            "owner": "identity--c98906b6-a10c-4d1e-9062-37edbc6618c1"
+        },
+        "end--b8946f79-8e1b-4a2c-96a1-74c0b3dac4ed": {
+            "type": "end",
+            "name": "Mitigation Actions Applied",
+            "owner": "identity--c98906b6-a10c-4d1e-9062-37edbc6618c1"
+        },
+        "end--c194393d-3a01-4a7d-a487-719ed34a42ee": {
+            "type": "end",
+            "name": "Incident Resolved",
+            "owner": "identity--c98906b6-a10c-4d1e-9062-37edbc6618c1"
+        },
+        "end--c1c53d78-d301-4365-afda-e62cf0e1579a": {
+            "type": "end",
+            "name": "Mitigation Actions Failed",
+            "owner": "identity--c98906b6-a10c-4d1e-9062-37edbc6618c1"
+        }
+    },
+    "agent_definitions": {
+        "individual--e0b0fa79-5483-406c-af75-f950e42e2a5f": {
+            "type": "individual",
+            "name": "Assigned Controller",
+            "description": "A human controller."
+        }
+    }
+}
