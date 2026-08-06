@@ -1337,7 +1337,7 @@
   }
 
   function componentsToPath(elements) {
-    return elements.join(',').replace(/,?([A-z]),?/g, '$1');
+    return elements.join(',').replace(/,?([A-Za-z]),?/g, '$1');
   }
 
   function toSVGPoints(points) {
