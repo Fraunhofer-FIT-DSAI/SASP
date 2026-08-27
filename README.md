@@ -16,6 +16,12 @@ The playbook management tool is designed to provide a wide variety of functional
 ### DISCLAIMER
 This is a proof-of-concept prototype and is not suitable for production use. The code has not been thoroughly reviewed for security vulnerabilities. For further information and support regarding production use, commercial applications, and advanced features, please contact the DPS group at Fraunhofer FIT: https://www.fit.fraunhofer.de/en/business-areas/data-science-and-artificial-intelligence/data-protection-and-sovereignty.html
 
+## Licence
+
+SASP is free software under the GNU Affero General Public License v3.0 or later (AGPL-3.0-or-later) — see [`LICENSE`](LICENSE). Third-party components and their licences: [`/third_party/licenses.json`](/third_party/licenses.json).
+
+For uses that the AGPL does not accommodate, contact [Data Protection and Sovereignty group of Fraunhofer FIT] (https://www.fit.fraunhofer.de/en/business-areas/data-science-and-artificial-intelligence/data-protection-and-sovereignty.html) or [Data Science and Artificial Intelligence department] (https://www.fit.fraunhofer.de/en/business-areas/data-science-and-artificial-intelligence.html).
+
 ## Dependencies
 As a scientific library in the Python ecosystem, we rely on external libraries to offer our features. In the `/third_party` folder, we list all the licenses of our direct dependencies. Please check the `/third_party/licenses.json` file to get a full list of dependencies and the corresponding licenses.
 
