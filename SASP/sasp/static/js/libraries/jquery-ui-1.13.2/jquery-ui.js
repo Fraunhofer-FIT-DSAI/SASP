@@ -906,10 +906,17 @@ $.fn.position = function( options ) {
 
 	var atOffset, targetWidth, targetHeight, targetOffset, basePosition, dimensions,
 
-		// Make sure string options are treated as CSS selectors
+		// Make sure string options are treated as CSS selectors and avoid
+		// passing arbitrary values to $(), which may interpret HTML strings.
 		target = typeof options.of === "string" ?
 			$( document ).find( options.of ) :
-			$( options.of ),
+			options.of && options.of.jquery ?
+				options.of :
+				options.of && ( options.of.nodeType || isWindow( options.of ) ) ?
+					$( options.of ) :
+					options.of && options.of.preventDefault && options.of.target ?
+						$( options.of.target ) :
+						$(),
 
 		within = $.position.getWithinInfo( options.within ),
 		scrollInfo = $.position.getScrollInfo( within ),
