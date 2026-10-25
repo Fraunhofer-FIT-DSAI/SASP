@@ -1342,7 +1342,7 @@
    * @return { string }
    */
   function componentsToPath(elements) {
-    return elements.flat().join(',').replace(/,?([A-z]),?/g, '$1');
+    return elements.flat().join(',').replace(/,?([A-Za-z]),?/g, '$1');
   }
 
   function move(point) {
