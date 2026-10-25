@@ -914,7 +914,8 @@ $.fn.position = function( options ) {
 				options.of :
 				options.of && ( options.of.nodeType || isWindow( options.of ) ) ?
 					$( options.of ) :
-					options.of && options.of.preventDefault && options.of.target ?
+					options.of && options.of.preventDefault && options.of.target &&
+						( options.of.target.nodeType || isWindow( options.of.target ) ) ?
 						$( options.of.target ) :
 						$(),
 
